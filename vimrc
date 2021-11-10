@@ -62,7 +62,6 @@ Plug 'tpope/vim-repeat'
 Plug 'tomtom/tcomment_vim'
 Plug 'vim-scripts/ReplaceWithRegister'
 Plug 'mbbill/undotree'
-Plug 'jiangmiao/auto-pairs'
 Plug 'vim-scripts/matchit.zip'
 
 " 一般使用foramt类插件来处理
@@ -827,7 +826,7 @@ if has_key(g:plugs, 'coc.nvim')
         \ 'coc-yaml', 'coc-snippets', 'coc-word', 'coc-clangd',
         \ 'coc-clang-format-style-options', 'coc-graphql', 'coc-highlight',
         \ 'coc-cmake', 'coc-diagnostic', 'coc-explorer', 'coc-markdownlint',
-        \ 'coc-rls', 'coc-sh', 'coc-sql', 'coc-sqlfluff',
+        \ 'coc-rls', 'coc-sh', 'coc-sql', 'coc-sqlfluff', 'coc-pairs',
         \ 'coc-toml', 'coc-xml', 'coc-yank', 'coc-docker', 'coc-explorer']
 
   nnoremap <silent> <Leader>y  :<C-u>CocList -A --normal yank<cr>
