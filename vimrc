@@ -85,7 +85,7 @@ Plug 'junegunn/gv.vim'
 " -----------------------------------------------------------------------------
 " Lang
 " -----------------------------------------------------------------------------
-Plug 'fatih/vim-go', { 'do': ':GoInstallBinaries' }
+" Plug 'fatih/vim-go', { 'do': ':GoInstallBinaries' }
 " Decompile Java class files using CFR.
 " Requires curl to download CFR JAR file.
 Plug 'jrubber/cfr.vim'
@@ -128,12 +128,12 @@ silent! set ruler laststatus=2 showmode cursorline colorcolumn=80 cmdheight=2
 silent! set list listchars=tab:\|\ , scrolloff=5 t_ti= t_te= shortmess+=c
 silent! set mouse=a mousehide helplang=cn
 if has('gui_running') | set guifont=Monaco:h13 | else | set t_Co=256 | endif
-if has("nvim-0.5.0") || has("patch-8.1.1564")
-  " Recently vim can merge signcolumn and number column into one
-  set signcolumn=number
-else
-  set signcolumn=yes
-endif
+" if has("nvim-0.5.0") || has("patch-8.1.1564")
+"   " Recently vim can merge signcolumn and number column into one
+"   set signcolumn=number
+" else
+"   set signcolumn=yes
+" endif
 if (has("termguicolors"))
   set termguicolors
 endif
@@ -666,32 +666,6 @@ if has_key(g:plugs, 'vim-go')
   let g:go_implements_mode='gopls'
   let g:go_diagnostics_enabled = 1
   let g:go_doc_popup_window = 1
-
-  let g:go_highlight_space_tab_error = 0
-  let g:go_highlight_array_whitespace_error = 0
-  let g:go_highlight_trailing_whitespace_error = 0
-  let g:go_highlight_extra_types = 0
-  let g:go_highlight_build_constraints = 1
-  let g:go_highlight_types = 0
-  let g:go_highlight_operators = 1
-  let g:go_highlight_format_strings = 0
-  let g:go_highlight_function_calls = 0
-  let g:go_gocode_propose_source = 1
-
-  let g:go_modifytags_transform = 'camelcase'
-  let g:go_fold_enable = []
-
-  nmap <C-g> :GoDecls<cr>
-  imap <C-g> <esc>:<C-u>GoDecls<cr>
-
-  " augroup go
-  "   autocmd!
-  "   " I like these more!
-  "   autocmd Filetype go command! -bang A call go#alternate#Switch(<bang>0, 'edit')
-  "   autocmd Filetype go command! -bang AV call go#alternate#Switch(<bang>0, 'vsplit')
-  "   autocmd Filetype go command! -bang AS call go#alternate#Switch(<bang>0, 'split')
-  "   autocmd Filetype go command! -bang AT call go#alternate#Switch(<bang>0, 'tabe')
-  " augroup END
 endif
 
 " -----------------------------------------------------------------------------
