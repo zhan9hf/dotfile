@@ -46,8 +46,8 @@ Plug 'godlygeek/csapprox', {'for': 'fugitiveblame' }
 
 if has('nvim-0.5')
   Plug 'neovim/nvim-lspconfig'
-  Plug 'nvim-treesitter/nvim-treesitter', {'branch': '0.5-compat', 'do': ':TSUpdate'}
-  Plug 'nvim-treesitter/nvim-treesitter-textobjects', {'branch': '0.5-compat'}
+  Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
+  Plug 'nvim-treesitter/nvim-treesitter-textobjects'
   " Plug 'nvim-treesitter/nvim-treesitter-refactor'
   Plug 'norcalli/nvim-colorizer.lua'
 endif
@@ -430,8 +430,10 @@ let g:plug_pwindow = 'vertical rightbelow new'
 " ----------------------------------------------------------------------------
 " <Enter> | seoul256.vim
 " ----------------------------------------------------------------------------
-if has_key(g:plugs, 'onedark.vim')
-  silent! colo onedark
+if has_key(g:plugs, 'gruvbox')
+  " silent! colo onedark
+  autocmd ColorScheme gruvbox highlight Normal ctermbg=235
+  colorscheme gruvbox
 endif
 
 " ----------------------------------------------------------------------------
@@ -608,6 +610,13 @@ endif
 
 if has_key(g:plugs, 'vim-startify')
   let g:startify_change_to_vcs_root = 1
+  let g:startify_lists = [
+      \ { 'type': 'dir',       'header': ['   MRU '. getcwd()] },
+      \ { 'type': 'files',     'header': ['   MRU']            },
+      \ { 'type': 'sessions',  'header': ['   Sessions']       },
+      \ { 'type': 'bookmarks', 'header': ['   Bookmarks']      },
+      \ { 'type': 'commands',  'header': ['   Commands']       },
+      \ ]
   augroup vimstartify
     autocmd!
     autocmd vimenter * if !argc() | Startify |endif " 无文件打开显示Startify
@@ -823,7 +832,7 @@ if has_key(g:plugs, 'coc.nvim')
   let g:coc_global_extensions = ['coc-git', 'coc-swagger',
         \ 'coc-python', 'coc-html', 'coc-json', 'coc-css', 'coc-vimlsp',
         \ 'coc-prettier', 'coc-eslint', 'coc-tsserver', 'coc-java',
-        \ 'coc-yaml', 'coc-snippets', 'coc-word', 'coc-clangd',
+        \ 'coc-yaml', 'coc-snippets', 'coc-word', 'coc-clangd', 'coc-go',
         \ 'coc-clang-format-style-options', 'coc-graphql', 'coc-highlight',
         \ 'coc-cmake', 'coc-diagnostic', 'coc-explorer', 'coc-markdownlint',
         \ 'coc-rls', 'coc-sh', 'coc-sql', 'coc-sqlfluff', 'coc-pairs',
