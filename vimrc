@@ -125,7 +125,7 @@ set fileencodings=ucs-bom,utf-8,cp936,gb18030,big5,euc-jp,euc-kr,latin1
 " -----------------------------------------------------------------------------
 silent! set number relativenumber background=dark nowrap guioptions=
 silent! set ruler laststatus=2 showmode cursorline colorcolumn=80 cmdheight=2
-silent! set list listchars=tab:\|\ , scrolloff=5 t_ti= t_te= shortmess+=c
+silent! set list scrolloff=5 t_ti= t_te= shortmess+=c
 silent! set mouse=a mousehide helplang=cn
 if has('gui_running') | set guifont=Monaco:h13 | else | set t_Co=256 | endif
 " if has("nvim-0.5.0") || has("patch-8.1.1564")
@@ -206,7 +206,7 @@ silent! set wildignore+=*.o,*.obj,*.exe,*.dll,*.so,*.manifest
 " -----------------------------------------------------------------------------
 " Performance
 " -----------------------------------------------------------------------------
-silent! set updatetime=300 timeout timeoutlen=500 ttimeout ttimeoutlen=50 ttyfast lazyredraw
+silent! set updatetime=300 timeout timeoutlen=500 ttimeout ttimeoutlen=50 lazyredraw
 
 " -----------------------------------------------------------------------------
 " Bell
