@@ -75,12 +75,12 @@ Plug 'rhysd/clever-f.vim'
 " -----------------------------------------------------------------------------
 Plug 'rhysd/committia.vim'
 Plug 'tpope/vim-fugitive'
-if has('nvim-0.5')
-  Plug 'nvim-lua/plenary.nvim'
-  Plug 'lewis6991/gitsigns.nvim'
-else
-  Plug 'mhinz/vim-signify'
-endif
+" if has('nvim-0.5')
+"   Plug 'nvim-lua/plenary.nvim'
+"   Plug 'lewis6991/gitsigns.nvim'
+" else
+"   Plug 'mhinz/vim-signify'
+" endif
 
 " -----------------------------------------------------------------------------
 " Lang
@@ -119,18 +119,34 @@ if has('gui_running') | set guifont=Monaco:h13 | else | set t_Co=256 | endif
 if (has("termguicolors"))
   set termguicolors
 endif
-function! s:statusline_expr()
-  let mod = "%{&modified ? '[+] ' : !&modifiable ? '[x] ' : ''}"
-  let ro  = "%{&readonly ? '[RO] ' : ''}"
-  let ft  = "%{len(&filetype) ? '['.&filetype.'] ' : ''}"
-  let fug = "%{exists('g:loaded_fugitive') ? fugitive#statusline() : ''}"
-  let sep = ' %= '
-  let pos = ' %-12(%l : %c%V%) '
-  let pct = ' %P'
-
-  return '[%n] %F %<'.mod.ro.ft.fug.sep.pos.'%*'.pct
+function! CocStatusDiagnostic() abort
+  let info = get(b:, 'coc_diagnostic_info', {})
+  let msgs = []
+  if get(info, 'error', 0)
+    call add(msgs, 'E' . info['error'])
+  endif
+  if get(info, 'warning', 0)
+    call add(msgs, 'W' . info['warning'])
+  endif
+  let emsg = empty(msgs) ? '' : join(msgs, ' ')
+  let curfunc = get(b:, 'coc_current_function', '')
+  let curfuncline = (curfunc == '') ? '' : (emsg == '' ? curfunc : ' '.curfunc)
+  let stat = get(g:, 'coc_status', '')
+  return emsg.curfuncline.stat
 endfunction
-let &statusline = s:statusline_expr()
+function! s:StatuslineExpr()
+  let mod  = "%{&modified ? '[+] ' : !&modifiable ? '[x] ' : ''}"
+  let ro   = "%{&readonly ? '[RO] ' : ''}"
+  let ft   = "%{len(&filetype) ? '['.&filetype.'] ' : ''}"
+  let fug  = "%{FugitiveStatusline()}"
+  let coc  = " %{CocStatusDiagnostic()} "
+  let sep  = ' %= '
+  let pos  = ' %-12(%l : %c%V%) '
+  let pct  = ' %P'
+
+  return '[%n] %t %<'.mod.ro.ft.fug.coc.sep.pos.'%*'.pct
+endfunction
+let &statusline = s:StatuslineExpr()
 
 if has('nvim')
   " https://github.com/neovim/neovim/issues/2897#issuecomment-115464516
@@ -496,8 +512,11 @@ if has_key(g:plugs, 'coc.nvim')
     autocmd FileType typescript,json setl formatexpr=CocAction('formatSelected')
     " Update signature help on jump placeholder.
     autocmd User CocJumpPlaceholder call CocActionAsync('showSignatureHelp')
+    autocmd vimenter * if !argc() | Startify | call CocActionAsync('runCommand', 'explorer') | endif
     autocmd BufEnter * if (!has('vim_starting') && winnr('$') == 1 && &filetype ==# 'coc-explorer') |
           \ q | endif
+    " autocmd FileType coc-explorer set laststatus=0 noshowmode noruler
+    autocmd FileType coc-explorer setl statusline=coc-explorer
   augroup end
   nnoremap <leader>e :CocCommand explorer<CR>
 
@@ -531,7 +550,7 @@ if has_key(g:plugs, 'coc.nvim')
   " Add (Neo)Vim's native statusline support.
   " NOTE: Please see `:h coc-status` for integrations with external plugins that
   " provide custom statusline: lightline.vim, vim-airline.
-  set statusline^=%{coc#status()}%{get(b:,'coc_current_function','')}
+  " set statusline^=%{coc#status()}%{get(b:,'coc_current_function','')}
 
   " Show all diagnostics.
   nnoremap <silent><nowait> <leader>d  :<C-u>CocList diagnostics<cr>
@@ -547,7 +566,7 @@ if has_key(g:plugs, 'coc.nvim')
         \ 'coc-clang-format-style-options', 'coc-graphql', 'coc-highlight',
         \ 'coc-cmake', 'coc-diagnostic', 'coc-explorer', 'coc-markdownlint',
         \ 'coc-rls', 'coc-sh', 'coc-sql', 'coc-sqlfluff',
-        \ 'coc-toml', 'coc-xml', 'coc-yank', 'coc-docker', 'coc-explorer']
+        \ 'coc-toml', 'coc-xml', 'coc-yank', 'coc-docker']
 
   nnoremap <silent> <leader>y  :<C-u>CocList -A --normal yank<cr>
 endif
