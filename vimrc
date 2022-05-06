@@ -62,16 +62,18 @@ if has('nvim-0.5')
   Plug 'numToStr/Comment.nvim'
   Plug 'windwp/nvim-autopairs'
 endif
+Plug 'brglng/vim-im-select'
 
 " -----------------------------------------------------------------------------
 " Browsing
 " -----------------------------------------------------------------------------
 Plug 't9md/vim-choosewin'
 Plug 'szw/vim-maximizer'
-Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
+Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 Plug 'junegunn/fzf.vim'
 Plug 'rhysd/clever-f.vim'
 Plug 'junegunn/vim-slash'
+Plug 'folke/which-key.nvim'
 
 " -----------------------------------------------------------------------------
 " Git
@@ -226,10 +228,6 @@ silent! set nobackup nowritebackup
 " Basic mappings
 " ----------------------------------------------------------------------------
 
-" Save
-nnoremap <leader>w :w<cr>
-" Quit
-nnoremap <leader>q :q<cr>
 nnoremap Q :qa!<cr>
 " Make Y behave like other capitals
 nnoremap Y y$
@@ -248,11 +246,6 @@ nnoremap <C-j> <C-w>j
 xnoremap < <gv
 xnoremap > >gv
 
-" ----------------------------------------------------------------------------
-" <leader>c Close quickfix/location window
-" ----------------------------------------------------------------------------
-nnoremap <leader>c :cclose<bar>lclose<cr>
-
 " }}}
 " ============================================================================
 " PLUGINS {{{
@@ -261,8 +254,8 @@ nnoremap <leader>c :cclose<bar>lclose<cr>
 " ----------------------------------------------------------------------------
 " colorscheme
 " ----------------------------------------------------------------------------
-if has_key(g:plugs, 'onehalf')
-  colorscheme onehalfdark
+if has_key(g:plugs, 'seoul256.vim')
+  colorscheme seoul256
 endif
 
 if has_key(g:plugs, 'vim-startify')
@@ -335,13 +328,6 @@ if has_key(g:plugs, 'vim-choosewin')
 endif
 
 " -----------------------------------------------------------------------------
-" vim-maximizer
-" -----------------------------------------------------------------------------
-if has_key(g:plugs, 'vim-maximizer')
-  nnoremap <leader>z :MaximizerToggle!<CR>
-endif
-
-" -----------------------------------------------------------------------------
 " gitsigns.nvim
 " -----------------------------------------------------------------------------
 if has_key(g:plugs, 'gitsigns.nvim')
@@ -379,17 +365,11 @@ if has_key(g:plugs, 'fzf.vim')
   command! -bang -nargs=? -complete=dir Files
         \ call fzf#vim#files(<q-args>, fzf#vim#with_preview(), <bang>0)
 
-  nnoremap <silent> <leader>ff        :Files<CR>
-  nnoremap <silent> <leader>fb        :Buffers<CR>
   command! -bang -nargs=* Ag
         \ call fzf#vim#ag(<q-args>,
         \                 <bang>0 ? fzf#vim#with_preview('up:60%')
         \                         : fzf#vim#with_preview('right:50%:hidden', '?'),
         \                 <bang>0)
-  nnoremap <silent> <leader>fg       :Ag <C-R><C-W><CR>
-  nnoremap <silent> <leader>fG       :Ag <C-R><C-A><CR>
-  xnoremap <silent> <leader>fg       y:Ag <C-R>"<CR>
-  nnoremap <silent> <leader>fm        :Maps<CR>
 
   inoremap <expr> <c-x><c-t> fzf#complete('tmuxwords.rb --all-but-current --scroll 500 --min 5')
   imap <c-x><c-k> <plug>(fzf-complete-word)
@@ -417,13 +397,53 @@ if has_key(g:plugs, 'fzf.vim')
 endif
 
 " -----------------------------------------------------------------------------
+" which-key
+" -----------------------------------------------------------------------------
+if has_key(g:plugs, 'which-key.nvim')
+lua << EOF
+  require("which-key").setup{
+    layout = {
+      height = { min = 2, max = 25 }, -- min and max height of the columns
+      width = { min = 30, max = 60 }, -- min and max width of the columns
+      spacing = 3, -- spacing between columns
+      align = "center", -- align columns left, center or right
+    },
+  }
+  local wk = require("which-key")
+  wk.register({
+    ["<leader>f"] = { name = "+fzf" },
+    ["<leader>ff"] = { ":Files<CR>", "find files" },
+    ["<leader>fb"] = { ":Buffers<CR>", "find buffers" },
+    ["<leader>fg"] = { ":Ag <C-R><C-W><CR>", "grep" },
+    ["<leader>fr"] = { ":History<CR>", "show recent files" },
+    ["<leader>fy"] = { ":History/<CR>", "yank history" },
+    ["<leader>fs"] = { ":GFiles?<CR>", "git status" },
+    ["<leader>fc"] = { ":BCommits<CR>", "git commit for current buffer" },
+    ["<leader>fm"] = { ":Maps<CR>", "show key maps" },
+    ["<leader>e"] = { ":CocCommand explorer<CR>", "toggle explorer" },
+    ["<leader>c"] = { ":cclose<bar>lclose<CR>", "close quickfix/location list" },
+    ["<leader>d"] = { ":<C-u>CocList diagnostics<CR>", "show diagnostics list" },
+    ["<leader>o"] = { ":<C-u>CocList outline<CR>", "show symbol for current file" },
+    ["<leader>z"] = { ":MaximizerToggle!<CR>", "toggle maximizer" },
+    ["<leader>w"] = { ":w<CR>", "save buffer" },
+    ["<leader>q"] = { ":q<CR>", "quit buffer" },
+  })
+  wk.register({
+    ["<leader>f"] = { name = "+fzf" },
+    ["<leader>fg"] = { 'y:Ag <C-R>"<CR>', "grep" },
+  }, {mode = "v"})
+EOF
+endif
+
+" -----------------------------------------------------------------------------
 " nvim-treesitter
 " -----------------------------------------------------------------------------
 if has_key(g:plugs, 'nvim-treesitter')
 lua <<EOF
   require'nvim-treesitter.configs'.setup {
-  ensure_installed = "maintained", -- one of "all", "maintained" (parsers with maintainers), or a list of languages
+  ensure_installed = "all", -- one of "all", "maintained" (parsers with maintainers), or a list of languages
   sync_install = false, -- install languages synchronously (only applied to `ensure_installed`)
+  ignore_install = { "phpdoc" },
   highlight = { enable = true },
   incremental_selection = {
     enable = true,
@@ -515,7 +535,7 @@ if has_key(g:plugs, 'coc.nvim')
   autocmd CursorHold * silent call CocActionAsync('highlight')
 
   " Symbol renaming.
-  nmap gR <Plug>(coc-rename)
+  nmap gr <Plug>(coc-rename)
 
   augroup CocConfig
     autocmd!
@@ -530,7 +550,6 @@ if has_key(g:plugs, 'coc.nvim')
     " autocmd FileType coc-explorer set laststatus=0 noshowmode noruler
     autocmd FileType coc-explorer setl statusline=coc-explorer
   augroup end
-  nnoremap <leader>e :CocCommand explorer<CR>
 
 
   " Remap <C-f> and <C-b> for scroll float windows/popups.
@@ -564,13 +583,6 @@ if has_key(g:plugs, 'coc.nvim')
   " provide custom statusline: lightline.vim, vim-airline.
   " set statusline^=%{coc#status()}%{get(b:,'coc_current_function','')}
 
-  " Show all diagnostics.
-  nnoremap <silent><nowait> <leader>d  :<C-u>CocList diagnostics<cr>
-  " Find symbol of current document.
-  nnoremap <silent><nowait> <leader>o  :<C-u>CocList outline<cr>
-  " Search workspace symbols.
-  nnoremap <silent><nowait> <leader>s  :<C-u>CocList -I symbols<cr>
-
   let g:coc_global_extensions = ['coc-git', 'coc-swagger',
         \ 'coc-python', 'coc-html', 'coc-json', 'coc-css', 'coc-vimlsp',
         \ 'coc-prettier', 'coc-eslint', 'coc-tsserver', 'coc-java',
@@ -579,8 +591,6 @@ if has_key(g:plugs, 'coc.nvim')
         \ 'coc-cmake', 'coc-diagnostic', 'coc-explorer', 'coc-markdownlint',
         \ 'coc-rls', 'coc-sh', 'coc-sql', 'coc-sqlfluff', '@onichandame/coc-proto3',
         \ 'coc-toml', 'coc-xml', 'coc-yank', 'coc-docker']
-
-  nnoremap <silent> <leader>y  :<C-u>CocList -A --normal yank<cr>
 endif
 
 " ============================================================================
