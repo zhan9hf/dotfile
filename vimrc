@@ -28,6 +28,8 @@ silent! if plug#begin('~/.vim/bundle')
 " -----------------------------------------------------------------------------
 Plug 'junegunn/seoul256.vim'
 Plug 'morhetz/gruvbox'
+Plug 'LunarVim/onedarker.nvim'
+Plug 'sonph/onehalf', { 'rtp': 'vim' }
 
 Plug 'mhinz/vim-startify'
 Plug 'chrisbra/unicode.vim', {'on': ['UnicodeName', 'UnicodeTable']}
@@ -43,8 +45,8 @@ if has('nvim-0.5')
   Plug 'norcalli/nvim-colorizer.lua'
   Plug 'lukas-reineke/indent-blankline.nvim'
 
-  " Plug 'kyazdani42/nvim-web-devicons'
-  " Plug 'glepnir/galaxyline.nvim' , {'branch': 'main'}
+  Plug 'nvim-lualine/lualine.nvim'
+  Plug 'kyazdani42/nvim-web-devicons'
 endif
 
 " -----------------------------------------------------------------------------
@@ -69,6 +71,7 @@ Plug 'szw/vim-maximizer'
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
 Plug 'junegunn/fzf.vim'
 Plug 'rhysd/clever-f.vim'
+Plug 'junegunn/vim-slash'
 
 " -----------------------------------------------------------------------------
 " Git
@@ -89,11 +92,15 @@ Plug 'tpope/vim-fugitive'
 " Requires curl to download CFR JAR file.
 Plug 'jrubber/cfr.vim'
 Plug 'mhinz/vim-rfc'
+" hledger
+Plug 'ledger/vim-ledger'
+Plug 'nathangrigg/vim-beancount'
 
 " -----------------------------------------------------------------------------
 " Completion
 " -----------------------------------------------------------------------------
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
+Plug 'github/copilot.vim'
 
 call plug#end()
 endif
@@ -119,34 +126,34 @@ if has('gui_running') | set guifont=Monaco:h13 | else | set t_Co=256 | endif
 if (has("termguicolors"))
   set termguicolors
 endif
-function! CocStatusDiagnostic() abort
-  let info = get(b:, 'coc_diagnostic_info', {})
-  let msgs = []
-  if get(info, 'error', 0)
-    call add(msgs, 'E' . info['error'])
-  endif
-  if get(info, 'warning', 0)
-    call add(msgs, 'W' . info['warning'])
-  endif
-  let emsg = empty(msgs) ? '' : join(msgs, ' ')
-  let curfunc = get(b:, 'coc_current_function', '')
-  let curfuncline = (curfunc == '') ? '' : (emsg == '' ? curfunc : ' '.curfunc)
-  let stat = get(g:, 'coc_status', '')
-  return emsg.curfuncline.stat
-endfunction
-function! s:StatuslineExpr()
-  let mod  = "%{&modified ? '[+] ' : !&modifiable ? '[x] ' : ''}"
-  let ro   = "%{&readonly ? '[RO] ' : ''}"
-  let ft   = "%{len(&filetype) ? '['.&filetype.'] ' : ''}"
-  let fug  = "%{FugitiveStatusline()}"
-  let coc  = " %{CocStatusDiagnostic()} "
-  let sep  = ' %= '
-  let pos  = ' %-12(%l : %c%V%) '
-  let pct  = ' %P'
-
-  return '[%n] %t %<'.mod.ro.ft.fug.coc.sep.pos.'%*'.pct
-endfunction
-let &statusline = s:StatuslineExpr()
+" function! CocStatusDiagnostic() abort
+"   let info = get(b:, 'coc_diagnostic_info', {})
+"   let msgs = []
+"   if get(info, 'error', 0)
+"     call add(msgs, 'E' . info['error'])
+"   endif
+"   if get(info, 'warning', 0)
+"     call add(msgs, 'W' . info['warning'])
+"   endif
+"   let emsg = empty(msgs) ? '' : '['.join(msgs, ' ').']'
+"   let curfunc = get(b:, 'coc_current_function', '')
+"   let curfuncline = (curfunc == '') ? '' : (emsg == '' ? curfunc : ' '.curfunc)
+"   let stat = get(g:, 'coc_status', '')
+"   return emsg.curfuncline.stat
+" endfunction
+" function! s:StatuslineExpr()
+"   let mod  = "%{&modified ? '[+] ' : !&modifiable ? '[x] ' : ''}"
+"   let ro   = "%{&readonly ? '[RO] ' : ''}"
+"   let ft   = "%{len(&filetype) ? '['.&filetype.'] ' : ''}"
+"   let git = "%{get(g:,'coc_git_status','')}%{get(b:,'coc_git_status','')}%{get(b:,'coc_git_blame','')}"
+"   let coc  = " %{CocStatusDiagnostic()} "
+"   let sep  = ' %= '
+"   let pos  = ' %-12(%l : %c%V%) '
+"   let pct  = ' %P'
+"
+"   return '[%n] %t %<'.mod.ro.ft.git.coc.sep.pos.'%*'.pct
+" endfunction
+" let &statusline = s:StatuslineExpr()
 
 if has('nvim')
   " https://github.com/neovim/neovim/issues/2897#issuecomment-115464516
@@ -254,8 +261,8 @@ nnoremap <leader>c :cclose<bar>lclose<cr>
 " ----------------------------------------------------------------------------
 " colorscheme
 " ----------------------------------------------------------------------------
-if has_key(g:plugs, 'gruvbox')
-  colorscheme gruvbox
+if has_key(g:plugs, 'onehalf')
+  colorscheme onehalfdark
 endif
 
 if has_key(g:plugs, 'vim-startify')
@@ -314,6 +321,10 @@ lua <<EOF
     show_current_context_start = true,
   }
 EOF
+endif
+
+if has_key(g:plugs, 'lualine.nvim')
+  lua require('lualine').setup()
 endif
 
 " -----------------------------------------------------------------------------
@@ -425,7 +436,7 @@ lua <<EOF
   indent = { enable = true, disable = { "python" } },
   -- indent = { enable = false },
   -- extensions
-  rainbow = { enable = true },
+  rainbow = { enable = true, extended_mode = true },
   textobjects = {
     select = {
       enable = true,
@@ -483,7 +494,7 @@ if has_key(g:plugs, 'coc.nvim')
   nmap <silent> ]g <Plug>(coc-diagnostic-next)
 
   " GoTo code navigation.
-  nmap <silent> gd <Plug>(coc-definition)
+  nmap <silent> g] <Plug>(coc-definition)
   nmap <silent> gy <Plug>(coc-type-definition)
   nmap <silent> gi <Plug>(coc-implementation)
   nmap <silent> gr <Plug>(coc-references)
@@ -512,7 +523,8 @@ if has_key(g:plugs, 'coc.nvim')
     autocmd FileType typescript,json setl formatexpr=CocAction('formatSelected')
     " Update signature help on jump placeholder.
     autocmd User CocJumpPlaceholder call CocActionAsync('showSignatureHelp')
-    autocmd vimenter * if !argc() | Startify | call CocActionAsync('runCommand', 'explorer') | endif
+    " autocmd vimenter * if !argc() | call CocActionAsync('runCommand', 'explorer') | Startify | endif
+    autocmd vimenter * if !argc() | Startify | endif
     autocmd BufEnter * if (!has('vim_starting') && winnr('$') == 1 && &filetype ==# 'coc-explorer') |
           \ q | endif
     " autocmd FileType coc-explorer set laststatus=0 noshowmode noruler
@@ -542,7 +554,7 @@ if has_key(g:plugs, 'coc.nvim')
 
   augroup CocFormat
     autocmd!
-    autocmd BufWritePre *
+    autocmd BufWritePre *.java,*.go,*.rs
     \ | silent! call CocAction('format')
     \ | silent! call CocAction('runCommand', 'editor.action.organizeImport')
   augroup end
@@ -565,7 +577,7 @@ if has_key(g:plugs, 'coc.nvim')
         \ 'coc-yaml', 'coc-snippets', 'coc-word', 'coc-clangd', 'coc-go',
         \ 'coc-clang-format-style-options', 'coc-graphql', 'coc-highlight',
         \ 'coc-cmake', 'coc-diagnostic', 'coc-explorer', 'coc-markdownlint',
-        \ 'coc-rls', 'coc-sh', 'coc-sql', 'coc-sqlfluff',
+        \ 'coc-rls', 'coc-sh', 'coc-sql', 'coc-sqlfluff', '@onichandame/coc-proto3',
         \ 'coc-toml', 'coc-xml', 'coc-yank', 'coc-docker']
 
   nnoremap <silent> <leader>y  :<C-u>CocList -A --normal yank<cr>
