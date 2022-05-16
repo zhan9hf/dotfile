@@ -338,45 +338,47 @@ endif
 " fzf
 " -----------------------------------------------------------------------------
 if has_key(g:plugs, 'fzf.vim')
-  if has('nvim') || has('gui_running')
-    let $FZF_DEFAULT_OPTS .= ' --inline-info'
-  endif
+  let $FZF_DEFAULT_OPTS .= ' --inline-info'
 
-  " Hide statusline of terminal buffer
-  autocmd! FileType fzf
-  autocmd  FileType fzf set laststatus=0 noshowmode noruler
-        \| autocmd BufLeave <buffer> set laststatus=2 showmode ruler
+  " All files
+  command! -nargs=? -complete=dir AF
+        \ call fzf#run(fzf#wrap(fzf#vim#with_preview({
+        \   'source': 'fd --type f --hidden --follow --exclude .git --no-ignore . '.expand(<q-args>)
+        \ })))
 
   let g:fzf_colors =
-        \ { 'fg':      ['fg', 'Normal'],
-        \ 'bg':      ['bg', 'Normal'],
-        \ 'hl':      ['fg', 'Comment'],
-        \ 'fg+':     ['fg', 'CursorLine', 'CursorColumn', 'Normal'],
-        \ 'bg+':     ['bg', 'CursorLine', 'CursorColumn'],
-        \ 'hl+':     ['fg', 'Statement'],
-        \ 'info':    ['fg', 'PreProc'],
-        \ 'border':  ['fg', 'Ignore'],
-        \ 'prompt':  ['fg', 'Conditional'],
-        \ 'pointer': ['fg', 'Exception'],
-        \ 'marker':  ['fg', 'Keyword'],
-        \ 'spinner': ['fg', 'Label'],
-        \ 'header':  ['fg', 'Comment'] }
+        \ { 'fg':         ['fg', 'Normal'],
+        \ 'bg':         ['bg', 'Normal'],
+        \ 'preview-bg': ['bg', 'NormalFloat'],
+        \ 'hl':         ['fg', 'Comment'],
+        \ 'fg+':        ['fg', 'CursorLine', 'CursorColumn', 'Normal'],
+        \ 'bg+':        ['bg', 'CursorLine', 'CursorColumn'],
+        \ 'hl+':        ['fg', 'Statement'],
+        \ 'info':       ['fg', 'PreProc'],
+        \ 'border':     ['fg', 'Ignore'],
+        \ 'prompt':     ['fg', 'Conditional'],
+        \ 'pointer':    ['fg', 'Exception'],
+        \ 'marker':     ['fg', 'Keyword'],
+        \ 'spinner':    ['fg', 'Label'],
+        \ 'header':     ['fg', 'Comment'] }
 
-  command! -bang -nargs=? -complete=dir Files
-        \ call fzf#vim#files(<q-args>, fzf#vim#with_preview(), <bang>0)
+  if exists('$TMUX')
+    let g:fzf_layout = { 'tmux': '-p90%,60%' }
+  else
+    let g:fzf_layout = { 'window': { 'width': 0.9, 'height': 0.6 } }
+  endif
 
-  command! -bang -nargs=* Ag
-        \ call fzf#vim#ag(<q-args>,
-        \                 <bang>0 ? fzf#vim#with_preview('up:60%')
-        \                         : fzf#vim#with_preview('right:50%:hidden', '?'),
-        \                 <bang>0)
+  command! -bar MoveBack if &buftype == 'nofile' && (winwidth(0) < &columns / 3 || winheight(0) < &lines / 3) | execute "normal! \<c-w>\<c-p>" | endif
 
-  inoremap <expr> <c-x><c-t> fzf#complete('tmuxwords.rb --all-but-current --scroll 500 --min 5')
   imap <c-x><c-k> <plug>(fzf-complete-word)
   imap <c-x><c-f> <plug>(fzf-complete-path)
   inoremap <expr> <c-x><c-d> fzf#vim#complete#path('blsd')
   imap <c-x><c-j> <plug>(fzf-complete-file-ag)
   imap <c-x><c-l> <plug>(fzf-complete-line)
+
+  " nmap <leader><tab> <plug>(fzf-maps-n)
+  " xmap <leader><tab> <plug>(fzf-maps-x)
+  " omap <leader><tab> <plug>(fzf-maps-o)
 
   function! s:plug_help_sink(line)
     let dir = g:plugs[a:line].dir
@@ -394,6 +396,17 @@ if has_key(g:plugs, 'fzf.vim')
   command! PlugHelp call fzf#run(fzf#wrap({
         \ 'source': sort(keys(g:plugs)),
         \ 'sink':   function('s:plug_help_sink')}))
+
+  function! RipgrepFzf(query, fullscreen)
+    let command_fmt = 'rg --column --line-number --no-heading --color=always --smart-case %s || true'
+    let initial_command = printf(command_fmt, shellescape(a:query))
+    let reload_command = printf(command_fmt, '{q}')
+    let options = {'options': ['--phony', '--query', a:query, '--bind', 'change:reload:'.reload_command]}
+    let options = fzf#vim#with_preview(options, 'right', 'ctrl-/')
+    call fzf#vim#grep(initial_command, 1, options, a:fullscreen)
+  endfunction
+
+  command! -nargs=* -bang RG call RipgrepFzf(<q-args>, <bang>0)
 endif
 
 " -----------------------------------------------------------------------------
@@ -412,8 +425,8 @@ lua << EOF
   local wk = require("which-key")
   wk.register({
     ["<leader>f"] = { name = "+fzf" },
-    ["<leader>ff"] = { ":Files<CR>", "find files" },
-    ["<leader>fb"] = { ":Buffers<CR>", "find buffers" },
+    ["<leader>ff"] = { ":MoveBack<BAR>Files<CR>", "find files" },
+    ["<leader>fb"] = { ":MoveBack<BAR>Buffers<CR>", "find buffers" },
     ["<leader>fg"] = { ":Ag <C-R><C-W><CR>", "grep" },
     ["<leader>fr"] = { ":History<CR>", "show recent files" },
     ["<leader>fy"] = { ":History/<CR>", "yank history" },
@@ -535,7 +548,7 @@ if has_key(g:plugs, 'coc.nvim')
   autocmd CursorHold * silent call CocActionAsync('highlight')
 
   " Symbol renaming.
-  nmap gr <Plug>(coc-rename)
+  nmap gR <Plug>(coc-rename)
 
   augroup CocConfig
     autocmd!
