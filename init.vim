@@ -26,6 +26,11 @@ endif
 silent! if plug#begin('~/.config/nvim/bundle')
 
 " -----------------------------------------------------------------------------
+" Lib
+" -----------------------------------------------------------------------------
+Plug 'nvim-lua/plenary.nvim'
+
+" -----------------------------------------------------------------------------
 " UI
 " -----------------------------------------------------------------------------
 Plug 'junegunn/seoul256.vim'
@@ -71,21 +76,21 @@ Plug 'rhysd/clever-f.vim'
 Plug 'junegunn/vim-slash'
 Plug 'folke/which-key.nvim'
 
+Plug 'nvim-telescope/telescope.nvim'
+
 " -----------------------------------------------------------------------------
 " Git
 " -----------------------------------------------------------------------------
-Plug 'rhysd/committia.vim'
+" Plug 'rhysd/committia.vim'
 Plug 'tpope/vim-fugitive'
-Plug 'nvim-lua/plenary.nvim'
 Plug 'lewis6991/gitsigns.nvim'
 
 " -----------------------------------------------------------------------------
 " Lang
 " -----------------------------------------------------------------------------
-" Decompile Java class files using CFR.
-" Requires curl to download CFR JAR file.
-Plug 'jrubber/cfr.vim'
 Plug 'mhinz/vim-rfc'
+Plug 'neovim/nvim-lspconfig'
+Plug 'mfussenegger/nvim-jdtls'
 
 " -----------------------------------------------------------------------------
 " Completion
@@ -93,7 +98,6 @@ Plug 'mhinz/vim-rfc'
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
 Plug 'github/copilot.vim'
 Plug 'williamboman/nvim-lsp-installer'
-Plug 'neovim/nvim-lspconfig'
 Plug 'hrsh7th/cmp-nvim-lsp'
 Plug 'hrsh7th/cmp-buffer'
 Plug 'hrsh7th/cmp-path'
@@ -104,6 +108,10 @@ Plug 'hrsh7th/vim-vsnip'
 Plug 'hrsh7th/cmp-nvim-lua'
 Plug 'hrsh7th/cmp-emoji'
 Plug 'hrsh7th/cmp-calc'
+" Plug 'ms-jpq/coq_nvim', {'branch': 'coq'}
+" Plug 'ms-jpq/coq.artifacts', {'branch': 'artifacts'}
+" Plug 'ms-jpq/coq.thirdparty', {'branch': '3p'}
+Plug 'onsails/lspkind.nvim'
 
 call plug#end()
 endif
@@ -281,76 +289,25 @@ if !empty(glob('~/.config/nvim/bundle/gitsigns.nvim'))
   lua require('gitsigns').setup()
 endif
 
-if !empty(glob('~/.config/nvim/bundle/fzf.vim'))
-  let $FZF_DEFAULT_OPTS .= ' --inline-info'
-
-  " All files
-  command! -nargs=? -complete=dir AF
-        \ call fzf#run(fzf#wrap(fzf#vim#with_preview({
-        \   'source': 'fd --type f --hidden --follow --exclude .git --no-ignore . '.expand(<q-args>)
-        \ })))
-
-  let g:fzf_colors =
-        \ { 'fg':         ['fg', 'Normal'],
-        \ 'bg':         ['bg', 'Normal'],
-        \ 'preview-bg': ['bg', 'NormalFloat'],
-        \ 'hl':         ['fg', 'Comment'],
-        \ 'fg+':        ['fg', 'CursorLine', 'CursorColumn', 'Normal'],
-        \ 'bg+':        ['bg', 'CursorLine', 'CursorColumn'],
-        \ 'hl+':        ['fg', 'Statement'],
-        \ 'info':       ['fg', 'PreProc'],
-        \ 'border':     ['fg', 'Ignore'],
-        \ 'prompt':     ['fg', 'Conditional'],
-        \ 'pointer':    ['fg', 'Exception'],
-        \ 'marker':     ['fg', 'Keyword'],
-        \ 'spinner':    ['fg', 'Label'],
-        \ 'header':     ['fg', 'Comment'] }
-
-  if exists('$TMUX')
-    let g:fzf_layout = { 'tmux': '-p90%,60%' }
-  else
-    let g:fzf_layout = { 'window': { 'width': 0.9, 'height': 0.6 } }
-  endif
-
-  command! -bar MoveBack if &buftype == 'nofile' && (winwidth(0) < &columns / 3 || winheight(0) < &lines / 3) | execute "normal! \<c-w>\<c-p>" | endif
-
-  imap <c-x><c-k> <plug>(fzf-complete-word)
-  imap <c-x><c-f> <plug>(fzf-complete-path)
-  inoremap <expr> <c-x><c-d> fzf#vim#complete#path('blsd')
-  imap <c-x><c-j> <plug>(fzf-complete-file-ag)
-  imap <c-x><c-l> <plug>(fzf-complete-line)
-
-  " nmap <leader><tab> <plug>(fzf-maps-n)
-  " xmap <leader><tab> <plug>(fzf-maps-x)
-  " omap <leader><tab> <plug>(fzf-maps-o)
-
-  function! s:plug_help_sink(line)
-    let dir = g:plugs[a:line].dir
-    for pat in ['doc/*.txt', 'README.md']
-      let match = get(split(globpath(dir, pat), "\n"), 0, '')
-      if len(match)
-        execute 'tabedit' match
-        return
-      endif
-    endfor
-    tabnew
-    execute 'Explore' dir
-  endfunction
-
-  command! PlugHelp call fzf#run(fzf#wrap({
-        \ 'source': sort(keys(g:plugs)),
-        \ 'sink':   function('s:plug_help_sink')}))
-
-  function! RipgrepFzf(query, fullscreen)
-    let command_fmt = 'rg --column --line-number --no-heading --color=always --smart-case %s || true'
-    let initial_command = printf(command_fmt, shellescape(a:query))
-    let reload_command = printf(command_fmt, '{q}')
-    let options = {'options': ['--phony', '--query', a:query, '--bind', 'change:reload:'.reload_command]}
-    let options = fzf#vim#with_preview(options, 'right', 'ctrl-/')
-    call fzf#vim#grep(initial_command, 1, options, a:fullscreen)
-  endfunction
-
-  command! -nargs=* -bang RG call RipgrepFzf(<q-args>, <bang>0)
+if !empty(glob('~/.config/nvim/bundle/telescope.nvim'))
+lua << EOF
+  require('telescope').setup{
+    defaults = {
+      layout_strategy = 'vertical',
+      layout_config = { height = 0.95 },
+      mappings = {
+        i = {
+          ["<C-j>"] = "move_selection_next",
+          ["<C-k>"] = "move_selection_previous",
+        }
+      }
+    },
+    pickers = {
+    },
+    extensions = {
+    }
+  }
+EOF
 endif
 
 if !empty(glob('~/.config/nvim/bundle/which-key.nvim'))
@@ -365,27 +322,23 @@ lua << EOF
   }
   local wk = require("which-key")
   wk.register({
-    ["<leader>f"] = { name = "+fzf" },
-    ["<leader>ff"] = { ":MoveBack<BAR>Files<CR>", "find files" },
-    ["<leader>fb"] = { ":MoveBack<BAR>Buffers<CR>", "find buffers" },
-    ["<leader>fg"] = { ":Ag <C-R><C-W><CR>", "grep" },
-    ["<leader>fr"] = { ":History<CR>", "show recent files" },
-    ["<leader>fy"] = { ":History/<CR>", "yank history" },
-    ["<leader>fs"] = { ":GFiles?<CR>", "git status" },
-    ["<leader>fc"] = { ":BCommits<CR>", "git commit for current buffer" },
-    ["<leader>fm"] = { ":Maps<CR>", "show key maps" },
+    ["<leader>f"] = { name = "+finder" },
+    ["<leader>ff"] = { "<cmd>Telescope find_files<cr>", "find files" },
+    ["<leader>fb"] = { "<cmd>Telescope buffers<cr>", "find buffers" },
+    ["<leader>fg"] = { "<cmd>Telescope live_grep<cr>", "grep" },
+    ["<leader>fr"] = { "<cmd>Telescope oldfiles<cr>", "show recent files" },
+    ["<leader>fy"] = { "<cmd>Telescope search_history<cr>", "yank history" },
+    ["<leader>fs"] = { "<cmd>Telescope git_status<cr>", "git status" },
+    ["<leader>fc"] = { "<cmd>Telescope git_bcommits<cr>", "git commit for current buffer" },
+    ["<leader>fm"] = { "<cmd>Telescope keymaps<cr>", "show key maps" },
+    ["<leader>fd"] = { "<cmd>Telescope diagnostics<cr>", "show diagnostics list" },
+    ["<leader>fs"] = { "<cmd>Telescope lsp_document_symbols<cr>", "show symbol for current file" },
     ["<leader>e"] = { ":CocCommand explorer<CR>", "toggle explorer" },
     ["<leader>c"] = { ":cclose<bar>lclose<CR>", "close quickfix/location list" },
-    ["<leader>d"] = { ":<C-u>CocList diagnostics<CR>", "show diagnostics list" },
-    ["<leader>o"] = { ":<C-u>CocList outline<CR>", "show symbol for current file" },
     ["<leader>z"] = { ":MaximizerToggle!<CR>", "toggle maximizer" },
     ["<leader>w"] = { ":w<CR>", "save buffer" },
     ["<leader>q"] = { ":q<CR>", "quit buffer" },
   })
-  wk.register({
-    ["<leader>f"] = { name = "+fzf" },
-    ["<leader>fg"] = { 'y:Ag <C-R>"<CR>', "grep" },
-  }, {mode = "v"})
 EOF
 endif
 
@@ -440,27 +393,12 @@ if !empty(glob('~/.config/nvim/bundle/coc.nvim'))
     " autocmd vimenter * if !argc() | Startify | endif
     autocmd BufEnter * if (!has('vim_starting') && winnr('$') == 1 && &filetype ==# 'coc-explorer') |
           \ q | endif
+    autocmd BufEnter * if (!has('vim_starting') && winnr('$') == 1 && &filetype ==# 'qf') |
+          \ q | endif
     autocmd FileType coc-explorer setl statusline=coc-explorer
     autocmd FileType * let b:coc_suggest_disable = 1  " 禁用coc补全
   augroup end
 
-  " Add `:Format` command to format current buffer.
-  " command! -nargs=0 Format :call CocAction('format')
-
-  " Add `:Fold` command to fold current buffer.
-  " command! -nargs=? Fold :call     CocAction('fold', <f-args>)
-
-  " Add `:OR` command for organize imports of the current buffer.
-  " command! -nargs=0 OR   :call     CocAction('runCommand', 'editor.action.organizeImport')
-
-"  let g:coc_global_extensions = ['coc-git', 'coc-swagger',
-"        \ 'coc-python', 'coc-html', 'coc-json', 'coc-css', 'coc-vimlsp',
-"        \ 'coc-prettier', 'coc-eslint', 'coc-tsserver', 'coc-java',
-"        \ 'coc-yaml', 'coc-snippets', 'coc-word', 'coc-clangd', 'coc-go',
-"        \ 'coc-clang-format-style-options', 'coc-graphql', 'coc-highlight',
-"        \ 'coc-cmake', 'coc-diagnostic', 'coc-explorer', 'coc-markdownlint',
-"        \ 'coc-rls', 'coc-sh', 'coc-sql', 'coc-sqlfluff', '@onichandame/coc-proto3',
-"        \ 'coc-toml', 'coc-xml', 'coc-yank', 'coc-docker']
   let g:coc_global_extensions = ['coc-highlight', 'coc-explorer', 'coc-yank']
 endif
 
@@ -471,6 +409,21 @@ if !empty(glob('~/.config/nvim/bundle/nvim-cmp'))
   imap <expr> <Plug>(vimrc:copilot-dummy-map) copilot#Accept("\<Tab>")
 lua << EOF
   require("nvim-lsp-installer").setup {}
+
+  function OrgImports(wait_ms)
+    local params = vim.lsp.util.make_range_params()
+    params.context = {only = {"source.organizeImports"}}
+    local result = vim.lsp.buf_request_sync(0, "textDocument/codeAction", params, wait_ms)
+    for _, res in pairs(result or {}) do
+      for _, r in pairs(res.result or {}) do
+        if r.edit then
+          vim.lsp.util.apply_workspace_edit(r.edit, "UTF-8")
+        else
+          vim.lsp.buf.execute_command(r.command)
+        end
+      end
+    end
+  end
 
   -- Mappings.
   -- See `:help vim.diagnostic.*` for documentation on any of the below functions
@@ -557,15 +510,32 @@ lua << EOF
         end
       end, { "i", "s" }),
     }),
-    sources = cmp.config.sources({
+    sources = {
       { name = 'nvim_lsp' },
       { name = 'vsnip' },
       { name = 'nvim_lua' },
-      { name = 'emoji' },
-      { name = 'calc' }
-    }, {
-      { name = 'buffer' },
-    }),
+      { name = 'path' },
+      { name = 'emoji', insert = true },
+      { name = 'calc' },
+      { name = 'buffer', keyword_length = 3 },
+    },
+    view = {
+      entries = 'custom',
+    },
+    formatting = {
+      format = require'lspkind'.cmp_format({
+        mode = "symbol_text",
+        menu = ({
+          nvim_lsp = "[LSP]",
+          vsnip = "[VS]",
+          nvim_lua = "[Lua]",
+          path = "[Path]",
+          buffer = "[Buffer]",
+          emoji = "[Emoji]",
+          calc = "[Calc]",
+        }),
+      }),
+    },
     experimental = {
         ghost_text = false -- this feature conflict with copilot.vim's preview.
       }
@@ -593,12 +563,99 @@ lua << EOF
   local capabilities = require('cmp_nvim_lsp').update_capabilities(vim.lsp.protocol.make_client_capabilities())
   local servers = { 'bashls', 'beancount' ,'clangd', 'clojure_lsp',
         'cmake', 'cssmodules_ls', 'diagnosticls', 'dockerls',
-        'golangci_lint_ls', 'gopls', 'jdtls', 'kotlin_language_server',
-        'metals', 'rls', 'sqlls', 'vimls', 'yamlls', 'cssls', 'html', 'jsonls'}
+        'golangci_lint_ls', 'gopls', 'kotlin_language_server', 'metals',
+        'rls', 'sqlls', 'vimls', 'yamlls', 'cssls', 'html', 'jsonls'}
   for _, lsp in pairs(servers) do
     require('lspconfig')[lsp].setup{on_attach = on_attach, capabilities = capabilities}
   end
 EOF
+  augroup LspFormat
+    autocmd!
+    autocmd BufWritePre *.go :silent! lua vim.lsp.buf.formatting()
+    autocmd BufWritePre *.go :silent! lua OrgImports(3000)
+  augroup END
+endif
+
+if !empty(glob('~/.config/nvim/bundle/coq_nvim'))
+  let g:coq_settings = { 'auto_start': 'shut-up', 'keymap.jump_to_mark': v:null, 'keymap.bigger_preview': v:null }
+lua << EOF
+  require("nvim-lsp-installer").setup {}
+
+  function OrgImports(wait_ms)
+    local params = vim.lsp.util.make_range_params()
+    params.context = {only = {"source.organizeImports"}}
+    local result = vim.lsp.buf_request_sync(0, "textDocument/codeAction", params, wait_ms)
+    for _, res in pairs(result or {}) do
+      for _, r in pairs(res.result or {}) do
+        if r.edit then
+          vim.lsp.util.apply_workspace_edit(r.edit, "UTF-8")
+        else
+          vim.lsp.buf.execute_command(r.command)
+        end
+      end
+    end
+  end
+
+  -- Mappings.
+  -- See `:help vim.diagnostic.*` for documentation on any of the below functions
+  local opts = { noremap=true, silent=true }
+  vim.api.nvim_set_keymap('n', '<leader>le', '<cmd>lua vim.diagnostic.open_float()<CR>', opts)
+  vim.api.nvim_set_keymap('n', '[g', '<cmd>lua vim.diagnostic.goto_prev()<CR>', opts)
+  vim.api.nvim_set_keymap('n', ']g', '<cmd>lua vim.diagnostic.goto_next()<CR>', opts)
+  vim.api.nvim_set_keymap('n', '<leader>ll', '<cmd>lua vim.diagnostic.setloclist()<CR>', opts)
+  -- Use an on_attach function to only map the following keys
+  -- after the language server attaches to the current buffer
+  local on_attach = function(client, bufnr)
+    -- Enable completion triggered by <c-x><c-o>
+    vim.api.nvim_buf_set_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
+    -- Mappings.
+    -- See `:help vim.lsp.*` for documentation on any of the below functions
+    vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gD', '<cmd>lua vim.lsp.buf.declaration()<CR>', opts)
+    vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gd', '<cmd>lua vim.lsp.buf.definition()<CR>', opts)
+    vim.api.nvim_buf_set_keymap(bufnr, 'n', 'K', '<cmd>lua vim.lsp.buf.hover()<CR>', opts)
+    vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gi', '<cmd>lua vim.lsp.buf.implementation()<CR>', opts)
+    vim.api.nvim_buf_set_keymap(bufnr, 'n', '<localleader>lk', '<cmd>lua vim.lsp.buf.signature_help()<CR>', opts)
+    vim.api.nvim_buf_set_keymap(bufnr, 'n', '<localleader>ld', '<cmd>lua vim.lsp.buf.type_definition()<CR>', opts)
+    vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gR', '<cmd>lua vim.lsp.buf.rename()<CR>', opts)
+    vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gr', '<cmd>lua vim.lsp.buf.references()<CR>', opts)
+    vim.api.nvim_buf_set_keymap(bufnr, 'n', '<localleader>lf', '<cmd>lua vim.lsp.buf.formatting()<CR>', opts)
+  end
+
+  local coq = require "coq"
+  local servers = { 'bashls', 'beancount' ,'clangd', 'clojure_lsp',
+        'cmake', 'cssmodules_ls', 'diagnosticls', 'dockerls',
+        'golangci_lint_ls', 'gopls', 'kotlin_language_server', 'metals',
+        'rls', 'sqlls', 'vimls', 'yamlls', 'cssls', 'html', 'jsonls'}
+  for _, lsp in pairs(servers) do
+    require('lspconfig')[lsp].setup(coq.lsp_ensure_capabilities({on_attach = on_attach}))
+  end
+
+  require("coq_3p") {
+    { src = "nvimlua", short_name = "nLUA" },
+    { src = "vimtex", short_name = "vTEX" },
+    { src = "copilot", short_name = "COP", accept_key = "<c-g>" },
+    { src = "bc", short_name = "MATH", precision = 6 },
+    { src = "orgmode", short_name = "ORG" },
+  }
+EOF
+  augroup LspFormat
+    autocmd!
+    autocmd BufWritePre *.go :silent! lua vim.lsp.buf.formatting()
+    autocmd BufWritePre *.go :silent! lua OrgImports(3000)
+  augroup END
+endif
+
+if !empty(glob('~/.config/nvim/bundle/nvim-jdtls'))
+  nnoremap crv <Cmd>lua require('jdtls').extract_variable()<CR>
+  vnoremap crv <Esc><Cmd>lua require('jdtls').extract_variable(true)<CR>
+  nnoremap crc <Cmd>lua require('jdtls').extract_constant()<CR>
+  vnoremap crc <Esc><Cmd>lua require('jdtls').extract_constant(true)<CR>
+  vnoremap crm <Esc><Cmd>lua require('jdtls').extract_method(true)<CR>
+  augroup JavaFormat
+    autocmd!
+    autocmd BufWritePre *.java :silent! lua vim.lsp.buf.formatting()
+    autocmd BufWritePre *.java :lua require'jdtls'.organize_imports()
+  augroup END
 endif
 
 " ============================================================================
