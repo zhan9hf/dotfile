@@ -108,9 +108,6 @@ Plug 'hrsh7th/vim-vsnip'
 Plug 'hrsh7th/cmp-nvim-lua'
 Plug 'hrsh7th/cmp-emoji'
 Plug 'hrsh7th/cmp-calc'
-" Plug 'ms-jpq/coq_nvim', {'branch': 'coq'}
-" Plug 'ms-jpq/coq.artifacts', {'branch': 'artifacts'}
-" Plug 'ms-jpq/coq.thirdparty', {'branch': '3p'}
 Plug 'onsails/lspkind.nvim'
 
 call plug#end()
@@ -332,7 +329,7 @@ lua << EOF
     ["<leader>fc"] = { "<cmd>Telescope git_bcommits<cr>", "git commit for current buffer" },
     ["<leader>fm"] = { "<cmd>Telescope keymaps<cr>", "show key maps" },
     ["<leader>fd"] = { "<cmd>Telescope diagnostics<cr>", "show diagnostics list" },
-    ["<leader>fs"] = { "<cmd>Telescope lsp_document_symbols<cr>", "show symbol for current file" },
+    ["<leader>fl"] = { "<cmd>Telescope lsp_document_symbols<cr>", "show symbol for current file" },
     ["<leader>e"] = { ":CocCommand explorer<CR>", "toggle explorer" },
     ["<leader>c"] = { ":cclose<bar>lclose<CR>", "close quickfix/location list" },
     ["<leader>z"] = { ":MaximizerToggle!<CR>", "toggle maximizer" },
@@ -390,10 +387,7 @@ if !empty(glob('~/.config/nvim/bundle/coc.nvim'))
   augroup CocConfig
     autocmd!
     autocmd vimenter * if !argc() | call CocActionAsync('runCommand', 'explorer') | Startify | endif
-    " autocmd vimenter * if !argc() | Startify | endif
     autocmd BufEnter * if (!has('vim_starting') && winnr('$') == 1 && &filetype ==# 'coc-explorer') |
-          \ q | endif
-    autocmd BufEnter * if (!has('vim_starting') && winnr('$') == 1 && &filetype ==# 'qf') |
           \ q | endif
     autocmd FileType coc-explorer setl statusline=coc-explorer
     autocmd FileType * let b:coc_suggest_disable = 1  " 禁用coc补全
@@ -428,10 +422,8 @@ lua << EOF
   -- Mappings.
   -- See `:help vim.diagnostic.*` for documentation on any of the below functions
   local opts = { noremap=true, silent=true }
-  vim.api.nvim_set_keymap('n', '<leader>le', '<cmd>lua vim.diagnostic.open_float()<CR>', opts)
-  vim.api.nvim_set_keymap('n', '[g', '<cmd>lua vim.diagnostic.goto_prev()<CR>', opts)
-  vim.api.nvim_set_keymap('n', ']g', '<cmd>lua vim.diagnostic.goto_next()<CR>', opts)
-  vim.api.nvim_set_keymap('n', '<leader>ll', '<cmd>lua vim.diagnostic.setloclist()<CR>', opts)
+  vim.api.nvim_set_keymap('n', '[d', '<cmd>lua vim.diagnostic.goto_prev()<CR>', opts)
+  vim.api.nvim_set_keymap('n', ']d', '<cmd>lua vim.diagnostic.goto_next()<CR>', opts)
   -- Use an on_attach function to only map the following keys
   -- after the language server attaches to the current buffer
   local on_attach = function(client, bufnr)
@@ -440,14 +432,12 @@ lua << EOF
     -- Mappings.
     -- See `:help vim.lsp.*` for documentation on any of the below functions
     vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gD', '<cmd>lua vim.lsp.buf.declaration()<CR>', opts)
-    vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gd', '<cmd>lua vim.lsp.buf.definition()<CR>', opts)
+    vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gd', '<cmd>Telescope lsp_definitions<cr>', opts)
     vim.api.nvim_buf_set_keymap(bufnr, 'n', 'K', '<cmd>lua vim.lsp.buf.hover()<CR>', opts)
-    vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gi', '<cmd>lua vim.lsp.buf.implementation()<CR>', opts)
-    vim.api.nvim_buf_set_keymap(bufnr, 'n', '<localleader>lk', '<cmd>lua vim.lsp.buf.signature_help()<CR>', opts)
-    vim.api.nvim_buf_set_keymap(bufnr, 'n', '<localleader>ld', '<cmd>lua vim.lsp.buf.type_definition()<CR>', opts)
+    vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gi', '<cmd>Telescope lsp_implementations<cr>', opts)
     vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gR', '<cmd>lua vim.lsp.buf.rename()<CR>', opts)
-    vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gr', '<cmd>lua vim.lsp.buf.references()<CR>', opts)
-    vim.api.nvim_buf_set_keymap(bufnr, 'n', '<localleader>lf', '<cmd>lua vim.lsp.buf.formatting()<CR>', opts)
+    vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gr', '<cmd>Telescope lsp_references<cr>', opts)
+    vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gt', '<cmd>Telescope lsp_type_definitions<cr>', opts)
   end
 
   -- Setup nvim-cmp.
@@ -576,81 +566,7 @@ EOF
   augroup END
 endif
 
-if !empty(glob('~/.config/nvim/bundle/coq_nvim'))
-  let g:coq_settings = { 'auto_start': 'shut-up', 'keymap.jump_to_mark': v:null, 'keymap.bigger_preview': v:null }
-lua << EOF
-  require("nvim-lsp-installer").setup {}
-
-  function OrgImports(wait_ms)
-    local params = vim.lsp.util.make_range_params()
-    params.context = {only = {"source.organizeImports"}}
-    local result = vim.lsp.buf_request_sync(0, "textDocument/codeAction", params, wait_ms)
-    for _, res in pairs(result or {}) do
-      for _, r in pairs(res.result or {}) do
-        if r.edit then
-          vim.lsp.util.apply_workspace_edit(r.edit, "UTF-8")
-        else
-          vim.lsp.buf.execute_command(r.command)
-        end
-      end
-    end
-  end
-
-  -- Mappings.
-  -- See `:help vim.diagnostic.*` for documentation on any of the below functions
-  local opts = { noremap=true, silent=true }
-  vim.api.nvim_set_keymap('n', '<leader>le', '<cmd>lua vim.diagnostic.open_float()<CR>', opts)
-  vim.api.nvim_set_keymap('n', '[g', '<cmd>lua vim.diagnostic.goto_prev()<CR>', opts)
-  vim.api.nvim_set_keymap('n', ']g', '<cmd>lua vim.diagnostic.goto_next()<CR>', opts)
-  vim.api.nvim_set_keymap('n', '<leader>ll', '<cmd>lua vim.diagnostic.setloclist()<CR>', opts)
-  -- Use an on_attach function to only map the following keys
-  -- after the language server attaches to the current buffer
-  local on_attach = function(client, bufnr)
-    -- Enable completion triggered by <c-x><c-o>
-    vim.api.nvim_buf_set_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
-    -- Mappings.
-    -- See `:help vim.lsp.*` for documentation on any of the below functions
-    vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gD', '<cmd>lua vim.lsp.buf.declaration()<CR>', opts)
-    vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gd', '<cmd>lua vim.lsp.buf.definition()<CR>', opts)
-    vim.api.nvim_buf_set_keymap(bufnr, 'n', 'K', '<cmd>lua vim.lsp.buf.hover()<CR>', opts)
-    vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gi', '<cmd>lua vim.lsp.buf.implementation()<CR>', opts)
-    vim.api.nvim_buf_set_keymap(bufnr, 'n', '<localleader>lk', '<cmd>lua vim.lsp.buf.signature_help()<CR>', opts)
-    vim.api.nvim_buf_set_keymap(bufnr, 'n', '<localleader>ld', '<cmd>lua vim.lsp.buf.type_definition()<CR>', opts)
-    vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gR', '<cmd>lua vim.lsp.buf.rename()<CR>', opts)
-    vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gr', '<cmd>lua vim.lsp.buf.references()<CR>', opts)
-    vim.api.nvim_buf_set_keymap(bufnr, 'n', '<localleader>lf', '<cmd>lua vim.lsp.buf.formatting()<CR>', opts)
-  end
-
-  local coq = require "coq"
-  local servers = { 'bashls', 'beancount' ,'clangd', 'clojure_lsp',
-        'cmake', 'cssmodules_ls', 'diagnosticls', 'dockerls',
-        'golangci_lint_ls', 'gopls', 'kotlin_language_server', 'metals',
-        'rls', 'sqlls', 'vimls', 'yamlls', 'cssls', 'html', 'jsonls'}
-  for _, lsp in pairs(servers) do
-    require('lspconfig')[lsp].setup(coq.lsp_ensure_capabilities({on_attach = on_attach}))
-  end
-
-  require("coq_3p") {
-    { src = "nvimlua", short_name = "nLUA" },
-    { src = "vimtex", short_name = "vTEX" },
-    { src = "copilot", short_name = "COP", accept_key = "<c-g>" },
-    { src = "bc", short_name = "MATH", precision = 6 },
-    { src = "orgmode", short_name = "ORG" },
-  }
-EOF
-  augroup LspFormat
-    autocmd!
-    autocmd BufWritePre *.go :silent! lua vim.lsp.buf.formatting()
-    autocmd BufWritePre *.go :silent! lua OrgImports(3000)
-  augroup END
-endif
-
 if !empty(glob('~/.config/nvim/bundle/nvim-jdtls'))
-  nnoremap crv <Cmd>lua require('jdtls').extract_variable()<CR>
-  vnoremap crv <Esc><Cmd>lua require('jdtls').extract_variable(true)<CR>
-  nnoremap crc <Cmd>lua require('jdtls').extract_constant()<CR>
-  vnoremap crc <Esc><Cmd>lua require('jdtls').extract_constant(true)<CR>
-  vnoremap crm <Esc><Cmd>lua require('jdtls').extract_method(true)<CR>
   augroup JavaFormat
     autocmd!
     autocmd BufWritePre *.java :silent! lua vim.lsp.buf.formatting()
