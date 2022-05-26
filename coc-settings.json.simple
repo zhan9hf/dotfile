@@ -1,0 +1,18 @@
+{
+    "explorer.icon.enableNerdfont": true,
+    "yank.highlight.duration": 200,
+    "explorer.sources": [
+        {
+            "name": "bookmark",
+            "expand": false
+        },
+        {
+            "name": "buffer",
+            "expand": true
+        },
+        {
+            "name": "file",
+            "expand": true
+        }
+    ]
+}

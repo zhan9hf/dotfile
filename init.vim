@@ -34,7 +34,7 @@ Plug 'nvim-lua/plenary.nvim'
 " UI
 " -----------------------------------------------------------------------------
 Plug 'junegunn/seoul256.vim'
-Plug 'morhetz/gruvbox'
+Plug 'ellisonleao/gruvbox.nvim'
 Plug 'LunarVim/onedarker.nvim'
 Plug 'sonph/onehalf', { 'rtp': 'vim' }
 
@@ -53,6 +53,8 @@ Plug 'lukas-reineke/indent-blankline.nvim'
 Plug 'nvim-lualine/lualine.nvim'
 Plug 'kyazdani42/nvim-web-devicons'
 
+" Plug 'akinsho/bufferline.nvim', { 'tag': 'v2.*' }
+
 " -----------------------------------------------------------------------------
 " Edit
 " -----------------------------------------------------------------------------
@@ -70,13 +72,15 @@ Plug 'brglng/vim-im-select'
 " -----------------------------------------------------------------------------
 Plug 't9md/vim-choosewin'
 Plug 'szw/vim-maximizer'
-Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
-Plug 'junegunn/fzf.vim'
+" Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
+" Plug 'junegunn/fzf.vim'
 Plug 'rhysd/clever-f.vim'
 Plug 'junegunn/vim-slash'
 Plug 'folke/which-key.nvim'
 
 Plug 'nvim-telescope/telescope.nvim'
+Plug 'nvim-telescope/telescope-fzf-native.nvim', { 'do': 'make' }
+Plug 'nvim-telescope/telescope-dap.nvim'
 
 " -----------------------------------------------------------------------------
 " Git
@@ -88,9 +92,13 @@ Plug 'lewis6991/gitsigns.nvim'
 " -----------------------------------------------------------------------------
 " Lang
 " -----------------------------------------------------------------------------
+Plug 'godlygeek/tabular'
+Plug 'preservim/vim-markdown'
+Plug 'iamcco/markdown-preview.nvim', { 'do': 'cd app && yarn install' }
 Plug 'mhinz/vim-rfc'
 Plug 'neovim/nvim-lspconfig'
 Plug 'mfussenegger/nvim-jdtls'
+Plug 'mfussenegger/nvim-dap'
 
 " -----------------------------------------------------------------------------
 " Completion
@@ -108,6 +116,7 @@ Plug 'hrsh7th/vim-vsnip'
 Plug 'hrsh7th/cmp-nvim-lua'
 Plug 'hrsh7th/cmp-emoji'
 Plug 'hrsh7th/cmp-calc'
+Plug 'uga-rosa/cmp-dictionary'
 Plug 'onsails/lspkind.nvim'
 
 call plug#end()
@@ -224,8 +233,8 @@ xnoremap > >gv
 " PLUGINS {{{
 " ============================================================================
 
-if !empty(glob('~/.config/nvim/bundle/seoul256.vim'))
-  colorscheme seoul256
+if !empty(glob('~/.config/nvim/bundle/gruvbox.nvim'))
+  colorscheme gruvbox
 endif
 
 if !empty(glob('~/.config/nvim/bundle/vim-startify'))
@@ -266,12 +275,47 @@ lua << EOF
   require("indent_blankline").setup {
     use_treesitter = true,
     buftype_exclude = { 'terminal', 'nofile' },
-    filetype_exclude = { 'help', 'packer', 'startify' },
+    filetype_exclude = {
+      "startify",
+      "dashboard",
+      "dotooagenda",
+      "log",
+      "fugitive",
+      "gitcommit",
+      "packer",
+      "vimwiki",
+      "markdown",
+      "json",
+      "txt",
+      "vista",
+      "help",
+      "todoist",
+      "NvimTree",
+      "peekaboo",
+      "git",
+      "TelescopePrompt",
+      "undotree",
+      "flutterToolsOutline",
+      "coc-explorer",
+      "" -- for all buffers without a file type
+    },
     space_char_blankline = " ",
     show_current_context = true,
     show_current_context_start = true,
   }
 EOF
+endif
+
+if !empty(glob('~/.config/nvim/bundle/bufferline.nvim'))
+lua << EOF
+  require("bufferline").setup{
+    options = {
+      offsets = {{filetype = "coc-explorer", text = "File Explorer", highlight = "Directory", text_align = "left"}},
+    }
+  }
+EOF
+  nnoremap <silent>]b :BufferLineCycleNext<CR>
+  nnoremap <silent>[b :BufferLineCyclePrev<CR>
 endif
 
 if !empty(glob('~/.config/nvim/bundle/lualine.nvim'))
@@ -283,7 +327,35 @@ if !empty(glob('~/.config/nvim/bundle/vim-choosewin'))
 endif
 
 if !empty(glob('~/.config/nvim/bundle/gitsigns.nvim'))
-  lua require('gitsigns').setup()
+lua << EOF
+  require('gitsigns').setup {
+    signs = {
+      add = {hl = 'GitGutterAdd', text = '▋'},
+      change = {hl = 'GitGutterChange',text= '▋'},
+      delete = {hl= 'GitGutterDelete', text = '▋'},
+      topdelete = {hl ='GitGutterDeleteChange',text = '▔'},
+      changedelete = {hl = 'GitGutterChange', text = '▎'},
+    },
+    keymaps = {
+       -- Default keymap options
+       noremap = true,
+       buffer = true,
+
+       ['n ]g'] = { expr = true, "&diff ? ']g' : '<cmd>lua require\"gitsigns\".next_hunk()<CR>'"},
+       ['n [g'] = { expr = true, "&diff ? '[g' : '<cmd>lua require\"gitsigns\".prev_hunk()<CR>'"},
+
+       ['n <leader>hs'] = '<cmd>lua require"gitsigns".stage_hunk()<CR>',
+       ['n <leader>hu'] = '<cmd>lua require"gitsigns".undo_stage_hunk()<CR>',
+       ['n <leader>hr'] = '<cmd>lua require"gitsigns".reset_hunk()<CR>',
+       ['n <leader>hp'] = '<cmd>lua require"gitsigns".preview_hunk()<CR>',
+       ['n <leader>hb'] = '<cmd>lua require"gitsigns".blame_line()<CR>',
+
+       -- Text objects
+       ['o ih'] = ':<C-U>lua require"gitsigns".text_object()<CR>',
+       ['x ih'] = ':<C-U>lua require"gitsigns".text_object()<CR>'
+     },
+  }
+EOF
 endif
 
 if !empty(glob('~/.config/nvim/bundle/telescope.nvim'))
@@ -304,6 +376,8 @@ lua << EOF
     extensions = {
     }
   }
+  require('telescope').load_extension('fzf')
+  require('telescope').load_extension('dap')
 EOF
 endif
 
@@ -330,11 +404,17 @@ lua << EOF
     ["<leader>fm"] = { "<cmd>Telescope keymaps<cr>", "show key maps" },
     ["<leader>fd"] = { "<cmd>Telescope diagnostics<cr>", "show diagnostics list" },
     ["<leader>fl"] = { "<cmd>Telescope lsp_document_symbols<cr>", "show symbol for current file" },
-    ["<leader>e"] = { ":CocCommand explorer<CR>", "toggle explorer" },
-    ["<leader>c"] = { ":cclose<bar>lclose<CR>", "close quickfix/location list" },
-    ["<leader>z"] = { ":MaximizerToggle!<CR>", "toggle maximizer" },
-    ["<leader>w"] = { ":w<CR>", "save buffer" },
-    ["<leader>q"] = { ":q<CR>", "quit buffer" },
+    ["<leader>fjc"] = { "<cmd>Telescope dap commands<cr>", "show dap commands" },
+    ["<leader>fjo"] = { "<cmd>Telescope dap configurations<cr>", "show dap configurations" },
+    ["<leader>fjb"] = { "<cmd>Telescope dap list_breakpoints<cr>", "show dap breakpoints" },
+    ["<leader>fjv"] = { "<cmd>Telescope dap variables<cr>", "show dap variables" },
+    ["<leader>fjf"] = { "<cmd>Telescope dap frames<cr>", "show dap frames" },
+    ["<leader>e"] = { "<Cmd>CocCommand explorer<CR>", "toggle explorer" },
+    ["<leader>r"] = { "<Cmd>call CocAction('runCommand', 'explorer.doAction', 'closest', ['reveal:0'], [['relative', 0, 'file']])<CR>", "reveal to current buffer" },
+    ["<leader>c"] = { "<Cmd>cclose<bar>lclose<CR>", "close quickfix/location list" },
+    ["<leader>z"] = { "<Cmd>MaximizerToggle!<CR>", "toggle maximizer" },
+    ["<leader>w"] = { "<Cmd>w<CR>", "save buffer" },
+    ["<leader>q"] = { "<Cmd>q<CR>", "quit buffer" },
   })
 EOF
 endif
@@ -399,12 +479,13 @@ endif
 if !empty(glob('~/.config/nvim/bundle/nvim-cmp'))
   set completeopt=menu,menuone,noselect
   " 禁用Copilot的Accept，改用cmp的
-  let g:copilot_no_tab_map = v:true
-  imap <expr> <Plug>(vimrc:copilot-dummy-map) copilot#Accept("\<Tab>")
+  " let g:copilot_no_tab_map = v:true
+  " imap <expr> <Plug>(vimrc:copilot-dummy-map) copilot#Accept("\<Tab>")
 lua << EOF
   require("nvim-lsp-installer").setup {}
 
-  function OrgImports(wait_ms)
+  -- format
+  function go_organize_imports_sync(timeout_ms)
     local params = vim.lsp.util.make_range_params()
     params.context = {only = {"source.organizeImports"}}
     local result = vim.lsp.buf_request_sync(0, "textDocument/codeAction", params, wait_ms)
@@ -417,6 +498,28 @@ lua << EOF
         end
       end
     end
+  end
+
+  local function nvim_create_augroup(group_name,definitions)
+    vim.api.nvim_command('augroup '..group_name)
+    vim.api.nvim_command('autocmd!')
+    for _, def in ipairs(definitions) do
+      local command = table.concat(vim.tbl_flatten{'autocmd', def}, ' ')
+      vim.api.nvim_command(command)
+    end
+    vim.api.nvim_command('augroup END')
+  end
+
+  local function lsp_before_save()
+    local defs = {}
+    local ext = vim.fn.expand('%:e')
+    table.insert(defs,{"BufWritePre", '*.'..ext,
+                      "lua vim.lsp.buf.formatting_sync(nil,1000)"})
+    if ext == 'go' then
+      table.insert(defs,{"BufWritePre","*.go",
+              "lua go_organize_imports_sync(1000)"})
+    end
+    nvim_create_augroup('lsp_before_save',defs)
   end
 
   -- Mappings.
@@ -438,6 +541,8 @@ lua << EOF
     vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gR', '<cmd>lua vim.lsp.buf.rename()<CR>', opts)
     vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gr', '<cmd>Telescope lsp_references<cr>', opts)
     vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gt', '<cmd>Telescope lsp_type_definitions<cr>', opts)
+
+    lsp_before_save()
   end
 
   -- Setup nvim-cmp.
@@ -471,9 +576,9 @@ lua << EOF
       ['<C-b>'] = cmp.mapping.scroll_docs(-4),
       ['<C-f>'] = cmp.mapping.scroll_docs(4),
       ['<C-e>'] = cmp.mapping.abort(),
-      ['<C-g>'] = cmp.mapping(function(fallback) -- Copilot
-        vim.api.nvim_feedkeys(vim.fn['copilot#Accept'](vim.api.nvim_replace_termcodes('<Tab>', true, true, true)), 'n', true)
-      end),
+      -- ['<C-g>'] = cmp.mapping(function(fallback) -- Copilot
+      --   vim.api.nvim_feedkeys(vim.fn['copilot#Accept'](vim.api.nvim_replace_termcodes('<Tab>', true, true, true)), 'n', true)
+      -- end),
       ['<CR>'] = function(fallback)
         if cmp.visible() then
           cmp.confirm()
@@ -508,6 +613,7 @@ lua << EOF
       { name = 'emoji', insert = true },
       { name = 'calc' },
       { name = 'buffer', keyword_length = 3 },
+      { name = 'dictionary' },
     },
     view = {
       entries = 'custom',
@@ -523,13 +629,14 @@ lua << EOF
           buffer = "[Buffer]",
           emoji = "[Emoji]",
           calc = "[Calc]",
+          dictionary = "[Dict]",
         }),
       }),
     },
-    experimental = {
-        ghost_text = false -- this feature conflict with copilot.vim's preview.
-      }
-    })
+    -- experimental = {
+    --     ghost_text = false -- this feature conflict with copilot.vim's preview.
+    -- }
+  })
 
   -- Use buffer source for `/` (if you enabled `native_menu`, this won't work anymore).
   cmp.setup.cmdline('/', {
@@ -549,6 +656,12 @@ lua << EOF
     })
   })
 
+  require("cmp_dictionary").setup({
+    dic = {
+      ["*"] = { "/usr/share/dict/words" },
+    },
+  })
+
   -- Setup lspconfig.
   local capabilities = require('cmp_nvim_lsp').update_capabilities(vim.lsp.protocol.make_client_capabilities())
   local servers = { 'bashls', 'beancount' ,'clangd', 'clojure_lsp',
@@ -559,19 +672,6 @@ lua << EOF
     require('lspconfig')[lsp].setup{on_attach = on_attach, capabilities = capabilities}
   end
 EOF
-  augroup LspFormat
-    autocmd!
-    autocmd BufWritePre *.go :silent! lua vim.lsp.buf.formatting()
-    autocmd BufWritePre *.go :silent! lua OrgImports(3000)
-  augroup END
-endif
-
-if !empty(glob('~/.config/nvim/bundle/nvim-jdtls'))
-  augroup JavaFormat
-    autocmd!
-    autocmd BufWritePre *.java :silent! lua vim.lsp.buf.formatting()
-    autocmd BufWritePre *.java :lua require'jdtls'.organize_imports()
-  augroup END
 endif
 
 " ============================================================================

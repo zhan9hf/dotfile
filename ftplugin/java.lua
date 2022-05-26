@@ -1,20 +1,96 @@
 local project_name = vim.fn.fnamemodify(vim.fn.getcwd(), ':p:h:t')
 local workspace_dir = '/Users/zhanghf/Documents/workspace/' .. project_name
 
+-- format
+local function nvim_create_augroup(group_name,definitions)
+    vim.api.nvim_command('augroup '..group_name)
+    vim.api.nvim_command('autocmd!')
+    for _, def in ipairs(definitions) do
+        local command = table.concat(vim.tbl_flatten{'autocmd', def}, ' ')
+        vim.api.nvim_command(command)
+    end
+    vim.api.nvim_command('augroup END')
+end
+
+local function java_lsp_before_save()
+    local defs = {}
+    local ext = vim.fn.expand('%:e')
+    table.insert(defs,{"BufWritePre", '*.'..ext,
+        "lua vim.lsp.buf.formatting_sync(nil,1000)"})
+    table.insert(defs,{"BufWritePre", '*.'..ext,
+        "lua require'jdtls'.organize_imports()"})
+    nvim_create_augroup('java_lsp_before_save',defs)
+end
+
 local opts = { noremap=true, silent=true }
 local on_attach = function(client, bufnr)
+    require('jdtls').setup_dap({ hotcodereplace = 'auto' })
+    require'jdtls.setup'.add_commands()
+    require('jdtls.dap').setup_dap_main_class_configs()
     -- Enable completion triggered by <c-x><c-o>
     vim.api.nvim_buf_set_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
     -- Mappings.
     -- See `:help vim.lsp.*` for documentation on any of the below functions
-    vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gD', '<cmd>lua vim.lsp.buf.declaration()<CR>', opts)
+    vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gD', '<cmd>lua vim.lsp.buf.declaration()<cr>', opts)
     vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gd', '<cmd>Telescope lsp_definitions<cr>', opts)
-    vim.api.nvim_buf_set_keymap(bufnr, 'n', 'K', '<cmd>lua vim.lsp.buf.hover()<CR>', opts)
+    vim.api.nvim_buf_set_keymap(bufnr, 'n', 'K', '<cmd>lua vim.lsp.buf.hover()<cr>', opts)
     vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gi', '<cmd>Telescope lsp_implementations<cr>', opts)
-    vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gR', '<cmd>lua vim.lsp.buf.rename()<CR>', opts)
+    vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gR', '<cmd>lua vim.lsp.buf.rename()<cr>', opts)
     vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gr', '<cmd>Telescope lsp_references<cr>', opts)
     vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gt', '<cmd>Telescope lsp_type_definitions<cr>', opts)
+
+    -- java
+    -- vim.api.nvim_buf_set_keymap(bufnr, 'n', 'crv', require('jdtls').extract_variable(), opts)
+    -- vim.api.nvim_buf_set_keymap(bufnr, 'v', 'crv', [[<esc><cmd>lua require('jdtls').extract_variable(true)<cr'>]], opts)
+    -- vim.api.nvim_buf_set_keymap(bufnr, 'n', 'crc', require('jdtls').extract_constant(), opts)
+    -- vim.api.nvim_buf_set_keymap(bufnr, 'v', 'crc', [[<esc><cmd>lua require('jdtls').extract_constant(true)<cr>]], opts)
+    -- vim.api.nvim_buf_set_keymap(bufnr, 'v', 'crc', [[<esc><cmd>lua require('jdtls').extract_method(true)<cr>]], opts)
+
+    java_lsp_before_save()
 end
+
+local jar_patterns = {
+    '/Users/zhanghf/.m2/repository/com/microsoft/java/com.microsoft.java.debug.plugin/target/com.microsoft.java.debug.plugin-*.jar',
+    '/Users/zhanghf/src/vscode-java-decompiler/server/*.jar',
+    '/Users/zhanghf/src/vscode-java-test/java-extension/com.microsoft.java.test.plugin/target/*.jar',
+    '/Users/zhanghf/src/vscode-java-test/java-extension/com.microsoft.java.test.runner/target/*.jar',
+    '/Users/zhanghf/src/vscode-java-test/java-extension/com.microsoft.java.test.runner/lib/*.jar',
+    -- '/dev/testforstephen/vscode-pde/server/*.jar'
+}
+-- npm install broke for me: https://github.com/npm/cli/issues/2508
+-- So gather the required jars manually; this is based on the gulpfile.js in the vscode-java-test repo
+local plugin_path = '/Users/zhanghf/src/vscode-java-test/java-extension/com.microsoft.java.test.plugin.site/target/repository/plugins/'
+local bundle_list = vim.tbl_map(
+    function(x) return require('jdtls.path').join(plugin_path, x) end,
+    {
+        'org.eclipse.jdt.junit4.runtime_*.jar',
+        'org.eclipse.jdt.junit5.runtime_*.jar',
+        'org.junit.jupiter.api*.jar',
+        'org.junit.jupiter.engine*.jar',
+        'org.junit.jupiter.migrationsupport*.jar',
+        'org.junit.jupiter.params*.jar',
+        'org.junit.vintage.engine*.jar',
+        'org.opentest4j*.jar',
+        'org.junit.platform.commons*.jar',
+        'org.junit.platform.engine*.jar',
+        'org.junit.platform.launcher*.jar',
+        'org.junit.platform.runner*.jar',
+        'org.junit.platform.suite.api*.jar',
+        'org.apiguardian*.jar'
+    }
+)
+vim.list_extend(jar_patterns, bundle_list)
+local bundles = {}
+for _, jar_pattern in ipairs(jar_patterns) do
+    for _, bundle in ipairs(vim.split(vim.fn.glob(jar_pattern), '\n')) do
+        if not vim.endswith(bundle, 'com.microsoft.java.test.runner-jar-with-dependencies.jar')
+            and not vim.endswith(bundle, 'com.microsoft.java.test.runner.jar') then
+            table.insert(bundles, bundle)
+        end
+    end
+end
+local extendedClientCapabilities = require('jdtls').extendedClientCapabilities;
+extendedClientCapabilities.resolveAdditionalTextEditsSupport = true;
 
 -- See `:help vim.lsp.start_client` for an overview of the supported `config` options.
 local config = {
@@ -67,7 +143,8 @@ local config = {
     --
     -- If you don't plan on using the debugger or other eclipse.jdt.ls plugins you can remove this
     init_options = {
-        bundles = {}
+        bundles = bundles;
+        extendedClientCapabilities = extendedClientCapabilities;
     },
 
     on_attach = on_attach,
