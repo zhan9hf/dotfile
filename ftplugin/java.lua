@@ -31,13 +31,13 @@ local on_attach = function(client, bufnr)
     vim.api.nvim_buf_set_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
     -- Mappings.
     -- See `:help vim.lsp.*` for documentation on any of the below functions
-    vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gD', '<cmd>lua vim.lsp.buf.declaration()<cr>', opts)
-    vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gd', '<cmd>Telescope lsp_definitions<cr>', opts)
+    vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gD', '<cmd>Declarations<cr>', opts)
+    vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gd', '<cmd>Definitions<cr>', opts)
     vim.api.nvim_buf_set_keymap(bufnr, 'n', 'K', '<cmd>lua vim.lsp.buf.hover()<cr>', opts)
-    vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gi', '<cmd>Telescope lsp_implementations<cr>', opts)
+    vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gi', '<cmd>Implementations<cr>', opts)
     vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gR', '<cmd>lua vim.lsp.buf.rename()<cr>', opts)
-    vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gr', '<cmd>Telescope lsp_references<cr>', opts)
-    vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gt', '<cmd>Telescope lsp_type_definitions<cr>', opts)
+    vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gr', '<cmd>References<cr>', opts)
+    vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gt', '<cmd>TypeDefinitions<cr>', opts)
 
     -- java
     -- vim.api.nvim_buf_set_keymap(bufnr, 'n', 'crv', require('jdtls').extract_variable(), opts)
@@ -117,21 +117,35 @@ local config = {
     },
 
     root_dir = require('jdtls.setup').find_root({
+        '.git',
         'pom.xml',
-        'mvnw',
-        'build.xml',
-        'gradlew',
-        'settings.gradle',
-        'settings.gradle.kts',
-        'build.gradle',
-        'build.gradle.kts',
-        '.git'}),
+        'gradlew'}),
 
     -- Here you can configure eclipse.jdt.ls specific settings
     -- See https://github.com/eclipse/eclipse.jdt.ls/wiki/Running-the-JAVA-LS-server-from-the-command-line#initialize-request
     -- for a list of options
     settings = {
         java = {
+            configuration = {
+                runtimes = {
+                    {
+                        name = "JavaSE-1.8",
+                        path = "/usr/local/opt/openjdk@8/",
+                    },
+                    {
+                        name = "JavaSE-11",
+                        path = "/usr/local/opt/openjdk@11/",
+                    },
+                    {
+                        name = "JavaSE-16",
+                        path = "/usr/local/opt/openjdk@16",
+                    },
+                    {
+                        name = "JavaSE-18",
+                        path = "/usr/local/opt/openjdk@18",
+                    },
+                }
+            };
         }
     },
 

@@ -53,6 +53,8 @@ Plug 'lukas-reineke/indent-blankline.nvim'
 Plug 'nvim-lualine/lualine.nvim'
 Plug 'kyazdani42/nvim-web-devicons'
 
+Plug 'itchyny/vim-cursorword'
+
 " Plug 'akinsho/bufferline.nvim', { 'tag': 'v2.*' }
 
 " -----------------------------------------------------------------------------
@@ -72,15 +74,16 @@ Plug 'brglng/vim-im-select'
 " -----------------------------------------------------------------------------
 Plug 't9md/vim-choosewin'
 Plug 'szw/vim-maximizer'
-" Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
-" Plug 'junegunn/fzf.vim'
 Plug 'rhysd/clever-f.vim'
 Plug 'junegunn/vim-slash'
 Plug 'folke/which-key.nvim'
 
-Plug 'nvim-telescope/telescope.nvim'
-Plug 'nvim-telescope/telescope-fzf-native.nvim', { 'do': 'make' }
-Plug 'nvim-telescope/telescope-dap.nvim'
+Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
+Plug 'junegunn/fzf.vim'
+Plug 'ibhagwan/fzf-lua', {'branch': 'main'}
+Plug 'gfanto/fzf-lsp.nvim'
+
+" Plug 'kyazdani42/nvim-tree.lua'
 
 " -----------------------------------------------------------------------------
 " Git
@@ -104,6 +107,7 @@ Plug 'mfussenegger/nvim-dap'
 " Completion
 " -----------------------------------------------------------------------------
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
+
 Plug 'github/copilot.vim'
 Plug 'williamboman/nvim-lsp-installer'
 Plug 'hrsh7th/cmp-nvim-lsp'
@@ -235,6 +239,17 @@ xnoremap > >gv
 
 if !empty(glob('~/.config/nvim/bundle/gruvbox.nvim'))
   colorscheme gruvbox
+  augroup update_bat_theme
+    autocmd!
+    autocmd colorscheme * call ToggleBatEnvVar()
+  augroup end
+  function ToggleBatEnvVar()
+    if (&background == "light")
+        let $BAT_THEME='gruvbox-light'
+    else
+        let $BAT_THEME='gruvbox-dark'
+    endif
+  endfunction
 endif
 
 if !empty(glob('~/.config/nvim/bundle/vim-startify'))
@@ -293,7 +308,7 @@ lua << EOF
       "NvimTree",
       "peekaboo",
       "git",
-      "TelescopePrompt",
+      -- "TelescopePrompt",
       "undotree",
       "flutterToolsOutline",
       "coc-explorer",
@@ -358,27 +373,76 @@ lua << EOF
 EOF
 endif
 
-if !empty(glob('~/.config/nvim/bundle/telescope.nvim'))
-lua << EOF
-  require('telescope').setup{
-    defaults = {
-      layout_strategy = 'vertical',
-      layout_config = { height = 0.95 },
-      mappings = {
-        i = {
-          ["<C-j>"] = "move_selection_next",
-          ["<C-k>"] = "move_selection_previous",
-        }
-      }
-    },
-    pickers = {
-    },
-    extensions = {
-    }
-  }
-  require('telescope').load_extension('fzf')
-  require('telescope').load_extension('dap')
-EOF
+if !empty(glob('~/.config/nvim/bundle/fzf.vim'))
+  let $FZF_DEFAULT_OPTS .= ' --inline-info'
+
+  " All files
+  command! -nargs=? -complete=dir AF
+        \ call fzf#run(fzf#wrap(fzf#vim#with_preview({
+        \   'source': 'fd --type f --hidden --follow --exclude .git --no-ignore . '.expand(<q-args>)
+        \ })))
+
+  let g:fzf_colors =
+        \ { 'fg':         ['fg', 'Normal'],
+        \ 'bg':         ['bg', 'Normal'],
+        \ 'preview-bg': ['bg', 'NormalFloat'],
+        \ 'hl':         ['fg', 'Comment'],
+        \ 'fg+':        ['fg', 'CursorLine', 'CursorColumn', 'Normal'],
+        \ 'bg+':        ['bg', 'CursorLine', 'CursorColumn'],
+        \ 'hl+':        ['fg', 'Statement'],
+        \ 'info':       ['fg', 'PreProc'],
+        \ 'border':     ['fg', 'Ignore'],
+        \ 'prompt':     ['fg', 'Conditional'],
+        \ 'pointer':    ['fg', 'Exception'],
+        \ 'marker':     ['fg', 'Keyword'],
+        \ 'spinner':    ['fg', 'Label'],
+        \ 'header':     ['fg', 'Comment'] }
+
+  if exists('$TMUX')
+    let g:fzf_layout = { 'tmux': '-p95%,70%' }
+  else
+    let g:fzf_layout = { 'window': { 'width': 0.95, 'height': 0.7 } }
+  endif
+
+  command! -bar MoveBack if &buftype == 'nofile' && (winwidth(0) < &columns / 3 || winheight(0) < &lines / 3) | execute "normal! \<c-w>\<c-p>" | endif
+
+  imap <c-x><c-k> <plug>(fzf-complete-word)
+  imap <c-x><c-f> <plug>(fzf-complete-path)
+  inoremap <expr> <c-x><c-d> fzf#vim#complete#path('blsd')
+  imap <c-x><c-j> <plug>(fzf-complete-file-ag)
+  imap <c-x><c-l> <plug>(fzf-complete-line)
+
+  " nmap <leader><tab> <plug>(fzf-maps-n)
+  " xmap <leader><tab> <plug>(fzf-maps-x)
+  " omap <leader><tab> <plug>(fzf-maps-o)
+
+  function! s:plug_help_sink(line)
+    let dir = g:plugs[a:line].dir
+    for pat in ['doc/*.txt', 'README.md']
+      let match = get(split(globpath(dir, pat), "\n"), 0, '')
+      if len(match)
+        execute 'tabedit' match
+        return
+      endif
+    endfor
+    tabnew
+    execute 'Explore' dir
+  endfunction
+
+  command! PlugHelp call fzf#run(fzf#wrap({
+        \ 'source': sort(keys(g:plugs)),
+        \ 'sink':   function('s:plug_help_sink')}))
+
+  function! RipgrepFzf(query, fullscreen)
+    let command_fmt = 'rg --column --line-number --no-heading --color=always --smart-case %s || true'
+    let initial_command = printf(command_fmt, shellescape(a:query))
+    let reload_command = printf(command_fmt, '{q}')
+    let options = {'options': ['--phony', '--query', a:query, '--bind', 'change:reload:'.reload_command]}
+    let options = fzf#vim#with_preview(options, 'right', 'ctrl-/')
+    call fzf#vim#grep(initial_command, 1, options, a:fullscreen)
+  endfunction
+
+  command! -nargs=* -bang RG call RipgrepFzf(<q-args>, <bang>0)
 endif
 
 if !empty(glob('~/.config/nvim/bundle/which-key.nvim'))
@@ -393,29 +457,41 @@ lua << EOF
   }
   local wk = require("which-key")
   wk.register({
-    ["<leader>f"] = { name = "+finder" },
-    ["<leader>ff"] = { "<cmd>Telescope find_files<cr>", "find files" },
-    ["<leader>fb"] = { "<cmd>Telescope buffers<cr>", "find buffers" },
-    ["<leader>fg"] = { "<cmd>Telescope live_grep<cr>", "grep" },
-    ["<leader>fr"] = { "<cmd>Telescope oldfiles<cr>", "show recent files" },
-    ["<leader>fy"] = { "<cmd>Telescope search_history<cr>", "yank history" },
-    ["<leader>fs"] = { "<cmd>Telescope git_status<cr>", "git status" },
-    ["<leader>fc"] = { "<cmd>Telescope git_bcommits<cr>", "git commit for current buffer" },
-    ["<leader>fm"] = { "<cmd>Telescope keymaps<cr>", "show key maps" },
-    ["<leader>fd"] = { "<cmd>Telescope diagnostics<cr>", "show diagnostics list" },
-    ["<leader>fl"] = { "<cmd>Telescope lsp_document_symbols<cr>", "show symbol for current file" },
-    ["<leader>fjc"] = { "<cmd>Telescope dap commands<cr>", "show dap commands" },
-    ["<leader>fjo"] = { "<cmd>Telescope dap configurations<cr>", "show dap configurations" },
-    ["<leader>fjb"] = { "<cmd>Telescope dap list_breakpoints<cr>", "show dap breakpoints" },
-    ["<leader>fjv"] = { "<cmd>Telescope dap variables<cr>", "show dap variables" },
-    ["<leader>fjf"] = { "<cmd>Telescope dap frames<cr>", "show dap frames" },
-    ["<leader>e"] = { "<Cmd>CocCommand explorer<CR>", "toggle explorer" },
+    ["<leader>f"] = { name = "+fzf" },
+    ["<leader>ff"] = { ":MoveBack<BAR>Files<CR>", "find files" },
+    ["<leader>fb"] = { ":MoveBack<BAR>Buffers<CR>", "find buffers" },
+    ["<leader>fg"] = { ":Rg <C-R><C-W><CR>", "grep" },
+    ["<leader>ft"] = { ":Rg<CR>", "interactive grep" },
+    ["<leader>fr"] = { ":History<CR>", "show recent files" },
+    ["<leader>fy"] = { ":History/<CR>", "yank history" },
+    ["<leader>f?"] = { ":GFiles?<CR>", "git status" },
+    ["<leader>fc"] = { ":BCommits<CR>", "git commit for current buffer" },
+    ["<leader>fm"] = { ":Maps<CR>", "show key maps" },
+    ["<leader>fdb"] = { ":Diagnostics<CR>", "show diagnostics for buffer" },
+    ["<leader>fdw"] = { ":DiagnosticsAll<CR>", "show diagnostics for workspace" },
+    ["<leader>fs"] = { ":DocumentSymbols<CR>", "show symbols for current buffer" },
+    ["<leader>fi"] = { ":IncomingCalls<CR>", "show incoming calls" },
+    ["<leader>fo"] = { ":OutgoingCalls<CR>", "show outgoing calls" },
+    ["<leader>fa"] = { ":CodeActions<CR>", "show code actions" },
+    ["<leader>fjc"] = { "<cmd>lua require('fzf-lua').dap_commands()<cr>", "show dap commands" },
+    ["<leader>fjo"] = { "<cmd>lua require('fzf-lua').dap_configurations()<cr>", "show dap configurations" },
+    ["<leader>fjb"] = { "<cmd>lua require('fzf-lua').dap_breakpoints()<cr>", "show dap breakpoints" },
+    ["<leader>fjv"] = { "<cmd>lua require('fzf-lua').dap_variables()<cr>", "show dap variables" },
+    ["<leader>fjf"] = { "<cmd>lua require('fzf-lua').dap_frames()<cr>", "show dap frames" },
+    -- ["<leader>e"] = { "<Cmd>NvimTreeToggle<CR>", "toggle explorer" },
+    ["<leader>e"] = { "<Cmd>call CocAction('runCommand','explorer')<CR>", "toggle explorer" },
+    -- ["<leader>n"] = { "<Cmd>NvimTreeFindFile<CR>", "reveal to current buffer" },
+    -- ["<leader>r"] = { "<Cmd>NvimTreeRefresh<CR>", "refresh explorer" },
     ["<leader>r"] = { "<Cmd>call CocAction('runCommand', 'explorer.doAction', 'closest', ['reveal:0'], [['relative', 0, 'file']])<CR>", "reveal to current buffer" },
     ["<leader>c"] = { "<Cmd>cclose<bar>lclose<CR>", "close quickfix/location list" },
     ["<leader>z"] = { "<Cmd>MaximizerToggle!<CR>", "toggle maximizer" },
     ["<leader>w"] = { "<Cmd>w<CR>", "save buffer" },
     ["<leader>q"] = { "<Cmd>q<CR>", "quit buffer" },
   })
+  wk.register({
+    ["<leader>f"] = { name = "+fzf" },
+    ["<leader>fg"] = { 'y:Ag <C-R>"<CR>', "grep" },
+  }, {mode = "v"})
 EOF
 endif
 
@@ -460,11 +536,86 @@ lua << EOF
 EOF
 endif
 
-if !empty(glob('~/.config/nvim/bundle/coc.nvim'))
-  " Highlight the symbol and its references when holding the cursor.
-  autocmd CursorHold * silent call CocActionAsync('highlight')
+if !empty(glob('~/.config/nvim/bundle/nvim-tree.lua'))
+  augroup nvim_tree_config
+    autocmd!
+    autocmd vimenter * if !argc() | Startify | endif
+    autocmd BufEnter * if (!has('vim_starting') && winnr('$') == 1 && &filetype ==# 'NvimTree') |
+          \ q | endif
+  augroup end
 
-  augroup CocConfig
+lua << EOF
+  local lib = require("nvim-tree.lib")
+  local view = require("nvim-tree.view")
+
+  local function collapse_all()
+    require("nvim-tree.actions.collapse-all").fn()
+  end
+
+  local function edit_or_open()
+    -- open as vsplit on current node
+    local action = "edit"
+    local node = lib.get_node_at_cursor()
+
+    -- Just copy what's done normally with vsplit
+    if node.link_to and not node.nodes then
+      require('nvim-tree.actions.open-file').fn(action, node.link_to)
+      view.close() -- Close the tree if file was opened
+    elseif node.nodes ~= nil then
+      lib.expand_or_collapse(node)
+
+    else
+      require('nvim-tree.actions.open-file').fn(action, node.absolute_path)
+      -- view.close() -- Close the tree if file was opened
+    end
+  end
+
+  local function vsplit_preview()
+    -- open as vsplit on current node
+    local action = "vsplit"
+    local node = lib.get_node_at_cursor()
+
+    -- Just copy what's done normally with vsplit
+    if node.link_to and not node.nodes then
+      require('nvim-tree.actions.open-file').fn(action, node.link_to)
+    elseif node.nodes ~= nil then
+      lib.expand_or_collapse(node)
+    else
+      require('nvim-tree.actions.open-file').fn(action, node.absolute_path)
+    end
+
+    -- Finally refocus on tree if it was lost
+    view.focus()
+  end
+
+  require'nvim-tree'.setup {
+    renderer = {
+      group_empty = true,
+      highlight_git = true,
+      indent_markers = {
+        enable = true,
+      }
+    },
+    diagnostics = {
+      enable = true,
+    },
+    view = {
+      mappings = {
+          custom_only = false,
+          list = {
+              { key = "l", action = "edit", action_cb = edit_or_open },
+              { key = "L", action = "vsplit_preview", action_cb = vsplit_preview },
+              { key = "h", action = "close_node" },
+              { key = "H", action = "collapse_all", action_cb = collapse_all }
+          }
+      },
+    },
+  }
+EOF
+endif
+
+if !empty(glob('~/.config/nvim/bundle/coc.nvim'))
+  augroup coc_config
     autocmd!
     autocmd vimenter * if !argc() | call CocActionAsync('runCommand', 'explorer') | Startify | endif
     autocmd BufEnter * if (!has('vim_starting') && winnr('$') == 1 && &filetype ==# 'coc-explorer') |
@@ -473,7 +624,7 @@ if !empty(glob('~/.config/nvim/bundle/coc.nvim'))
     autocmd FileType * let b:coc_suggest_disable = 1  " 禁用coc补全
   augroup end
 
-  let g:coc_global_extensions = ['coc-highlight', 'coc-explorer', 'coc-yank']
+  let g:coc_global_extensions = ['coc-explorer']
 endif
 
 if !empty(glob('~/.config/nvim/bundle/nvim-cmp'))
@@ -534,13 +685,13 @@ lua << EOF
     vim.api.nvim_buf_set_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
     -- Mappings.
     -- See `:help vim.lsp.*` for documentation on any of the below functions
-    vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gD', '<cmd>lua vim.lsp.buf.declaration()<CR>', opts)
-    vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gd', '<cmd>Telescope lsp_definitions<cr>', opts)
+    vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gD', '<cmd>Declarations<CR>', opts)
+    vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gd', '<cmd>Definitions<cr>', opts)
     vim.api.nvim_buf_set_keymap(bufnr, 'n', 'K', '<cmd>lua vim.lsp.buf.hover()<CR>', opts)
-    vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gi', '<cmd>Telescope lsp_implementations<cr>', opts)
+    vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gi', '<cmd>Implementations<cr>', opts)
     vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gR', '<cmd>lua vim.lsp.buf.rename()<CR>', opts)
-    vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gr', '<cmd>Telescope lsp_references<cr>', opts)
-    vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gt', '<cmd>Telescope lsp_type_definitions<cr>', opts)
+    vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gr', '<cmd>References<cr>', opts)
+    vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gt', '<cmd>TypeDefinitions<cr>', opts)
 
     lsp_before_save()
   end
@@ -576,9 +727,9 @@ lua << EOF
       ['<C-b>'] = cmp.mapping.scroll_docs(-4),
       ['<C-f>'] = cmp.mapping.scroll_docs(4),
       ['<C-e>'] = cmp.mapping.abort(),
-      -- ['<C-g>'] = cmp.mapping(function(fallback) -- Copilot
-      --   vim.api.nvim_feedkeys(vim.fn['copilot#Accept'](vim.api.nvim_replace_termcodes('<Tab>', true, true, true)), 'n', true)
-      -- end),
+      ['<C-g>'] = cmp.mapping(function(fallback) -- Copilot
+        vim.api.nvim_feedkeys(vim.fn['copilot#Accept'](vim.api.nvim_replace_termcodes('<Tab>', true, true, true)), 'n', true)
+      end),
       ['<CR>'] = function(fallback)
         if cmp.visible() then
           cmp.confirm()
@@ -665,7 +816,7 @@ lua << EOF
   -- Setup lspconfig.
   local capabilities = require('cmp_nvim_lsp').update_capabilities(vim.lsp.protocol.make_client_capabilities())
   local servers = { 'bashls', 'beancount' ,'clangd', 'clojure_lsp',
-        'cmake', 'cssmodules_ls', 'diagnosticls', 'dockerls',
+        'cmake', 'cssmodules_ls', 'diagnosticls', 'dockerls', 'lemminx',
         'golangci_lint_ls', 'gopls', 'kotlin_language_server', 'metals',
         'rls', 'sqlls', 'vimls', 'yamlls', 'cssls', 'html', 'jsonls'}
   for _, lsp in pairs(servers) do
@@ -677,26 +828,42 @@ endif
 " ============================================================================
 " AUTOCMD {{{
 " ============================================================================
-augroup DockerfileTypeSet
+augroup dockerfile_type_set
   autocmd!
   autocmd BufNewFile,BufRead Dockerfile* set filetype=dockerfile
 augroup end
 
-augroup FileTypeSet
+function! s:setf(filetype) abort
+    if &filetype !=# a:filetype
+        let &filetype = a:filetype
+    endif
+endfunction
+
+augroup beancount_type_set
+  autocmd!
+  autocmd BufNewFile,BufRead *.bean,*.beancount call s:setf('beancount')
+augroup end
+
+augroup filetype_set
   autocmd!
   autocmd FileType markdown,text setlocal wrap
   autocmd FileType yaml,vim setlocal expandtab shiftwidth=2 softtabstop=2 tabstop=2
 augroup end
 
-augroup UnsetPaste
+augroup unset_paste
   autocmd!
   autocmd InsertLeave * silent! set nopaste
 augroup end
 
-augroup RememberPosition
+augroup remember_position
   autocmd!
   au BufReadPost * if line("'\"") > 0|if line("'\"") <= line("$")|exe("norm '\"")|else|exe "norm $"|endif|endif
 augroup end
+
+augroup highlight_yank
+    autocmd!
+    au TextYankPost * silent! lua vim.highlight.on_yank{higroup="IncSearch", timeout=200}
+augroup END
 
 
 " -----------------------------------------------------------------------------
@@ -708,7 +875,7 @@ function! s:helptab()
     nnoremap <buffer> q :q<cr>
   endif
 endfunction
-augroup HelpInNewTab
+augroup help_in_new_tab
   autocmd!
   autocmd BufEnter *.txt call s:helptab()
 augroup end
