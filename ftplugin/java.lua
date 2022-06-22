@@ -26,7 +26,6 @@ local opts = { noremap=true, silent=true }
 local on_attach = function(client, bufnr)
     require('jdtls').setup_dap({ hotcodereplace = 'auto' })
     require'jdtls.setup'.add_commands()
-    require('jdtls.dap').setup_dap_main_class_configs()
     -- Enable completion triggered by <c-x><c-o>
     vim.api.nvim_buf_set_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
     -- Mappings.

@@ -35,8 +35,8 @@ Plug 'nvim-lua/plenary.nvim'
 " -----------------------------------------------------------------------------
 Plug 'junegunn/seoul256.vim'
 Plug 'ellisonleao/gruvbox.nvim'
-Plug 'LunarVim/onedarker.nvim'
-Plug 'sonph/onehalf', { 'rtp': 'vim' }
+Plug 'NTBBloodbath/doom-one.nvim'
+Plug 'olimorris/onedarkpro.nvim'
 
 Plug 'mhinz/vim-startify'
 Plug 'chrisbra/unicode.vim', {'on': ['UnicodeName', 'UnicodeTable']}
@@ -102,6 +102,7 @@ Plug 'mhinz/vim-rfc'
 Plug 'neovim/nvim-lspconfig'
 Plug 'mfussenegger/nvim-jdtls'
 Plug 'mfussenegger/nvim-dap'
+Plug 'nvim-orgmode/orgmode'
 
 " -----------------------------------------------------------------------------
 " Completion
@@ -352,23 +353,23 @@ lua << EOF
       changedelete = {hl = 'GitGutterChange', text = '▎'},
     },
     keymaps = {
-       -- Default keymap options
-       noremap = true,
-       buffer = true,
+      -- Default keymap options
+      noremap = true,
+      buffer = true,
 
-       ['n ]g'] = { expr = true, "&diff ? ']g' : '<cmd>lua require\"gitsigns\".next_hunk()<CR>'"},
-       ['n [g'] = { expr = true, "&diff ? '[g' : '<cmd>lua require\"gitsigns\".prev_hunk()<CR>'"},
+      ['n ]g'] = { expr = true, "&diff ? ']g' : '<cmd>lua require\"gitsigns\".next_hunk()<CR>'"},
+      ['n [g'] = { expr = true, "&diff ? '[g' : '<cmd>lua require\"gitsigns\".prev_hunk()<CR>'"},
 
-       ['n <leader>hs'] = '<cmd>lua require"gitsigns".stage_hunk()<CR>',
-       ['n <leader>hu'] = '<cmd>lua require"gitsigns".undo_stage_hunk()<CR>',
-       ['n <leader>hr'] = '<cmd>lua require"gitsigns".reset_hunk()<CR>',
-       ['n <leader>hp'] = '<cmd>lua require"gitsigns".preview_hunk()<CR>',
-       ['n <leader>hb'] = '<cmd>lua require"gitsigns".blame_line()<CR>',
+      ['n <leader>hs'] = '<cmd>lua require"gitsigns".stage_hunk()<CR>',
+      ['n <leader>hu'] = '<cmd>lua require"gitsigns".undo_stage_hunk()<CR>',
+      ['n <leader>hr'] = '<cmd>lua require"gitsigns".reset_hunk()<CR>',
+      ['n <leader>hp'] = '<cmd>lua require"gitsigns".preview_hunk()<CR>',
+      ['n <leader>hb'] = '<cmd>lua require"gitsigns".blame_line()<CR>',
 
-       -- Text objects
-       ['o ih'] = ':<C-U>lua require"gitsigns".text_object()<CR>',
-       ['x ih'] = ':<C-U>lua require"gitsigns".text_object()<CR>'
-     },
+      -- Text objects
+      ['o ih'] = ':<C-U>lua require"gitsigns".text_object()<CR>',
+      ['x ih'] = ':<C-U>lua require"gitsigns".text_object()<CR>'
+    },
   }
 EOF
 endif
@@ -478,6 +479,7 @@ lua << EOF
     ["<leader>fjb"] = { "<cmd>lua require('fzf-lua').dap_breakpoints()<cr>", "show dap breakpoints" },
     ["<leader>fjv"] = { "<cmd>lua require('fzf-lua').dap_variables()<cr>", "show dap variables" },
     ["<leader>fjf"] = { "<cmd>lua require('fzf-lua').dap_frames()<cr>", "show dap frames" },
+    ["<leader>fjm"] = { "<cmd>lua require('jdtls.dap').setup_dap_main_class_configs()<cr>", "find main classes" },
     -- ["<leader>e"] = { "<Cmd>NvimTreeToggle<CR>", "toggle explorer" },
     ["<leader>e"] = { "<Cmd>call CocAction('runCommand','explorer')<CR>", "toggle explorer" },
     -- ["<leader>n"] = { "<Cmd>NvimTreeFindFile<CR>", "reveal to current buffer" },
@@ -495,13 +497,23 @@ lua << EOF
 EOF
 endif
 
+if !empty(glob('~/.config/nvim/bundle/orgmode'))
+lua << EOF
+  require('orgmode').setup_ts_grammar()
+  require('orgmode').setup({
+    org_agenda_files = {'~/Desktop/org/*'},
+    org_default_notes_file = '~/Desktop/org/refile.org',
+  })
+EOF
+end
+
 if !empty(glob('~/.config/nvim/bundle/nvim-treesitter'))
 lua << EOF
   require'nvim-treesitter.configs'.setup {
   ensure_installed = "all", -- one of "all", "maintained" (parsers with maintainers), or a list of languages
   sync_install = false, -- install languages synchronously (only applied to `ensure_installed`)
   ignore_install = { "phpdoc" },
-  highlight = { enable = true },
+  highlight = { enable = true, additional_vim_regex_highlighting = {'org'} },
   incremental_selection = {
     enable = true,
     keymaps = {
@@ -664,8 +676,11 @@ lua << EOF
   local function lsp_before_save()
     local defs = {}
     local ext = vim.fn.expand('%:e')
-    table.insert(defs,{"BufWritePre", '*.'..ext,
-                      "lua vim.lsp.buf.formatting_sync(nil,1000)"})
+    if ext ~= 'bean' then
+      table.insert(defs,{"BufWritePre", '*.'..ext,
+        "lua vim.lsp.buf.formatting_sync(nil,1000)"})
+    end
+
     if ext == 'go' then
       table.insert(defs,{"BufWritePre","*.go",
               "lua go_organize_imports_sync(1000)"})
@@ -695,6 +710,17 @@ lua << EOF
 
     lsp_before_save()
   end
+
+  -- set diagnostic
+  local signs = { Error = " ", Warn = " ", Hint = " ", Info = " " }
+  for type, icon in pairs(signs) do
+    local hl = "DiagnosticSign" .. type
+    vim.fn.sign_define(hl, { text = icon, texthl = hl, numhl = hl })
+  end
+
+  -- show diagnostic in hover window
+  -- vim.o.updatetime = 250
+  -- vim.cmd [[autocmd! CursorHold,CursorHoldI * lua vim.diagnostic.open_float(nil, {focus=false})]]
 
   -- Setup nvim-cmp.
   local has_words_before = function()
@@ -765,6 +791,7 @@ lua << EOF
       { name = 'calc' },
       { name = 'buffer', keyword_length = 3 },
       { name = 'dictionary' },
+      { name = 'orgmode' }
     },
     view = {
       entries = 'custom',
@@ -815,13 +842,21 @@ lua << EOF
 
   -- Setup lspconfig.
   local capabilities = require('cmp_nvim_lsp').update_capabilities(vim.lsp.protocol.make_client_capabilities())
-  local servers = { 'bashls', 'beancount' ,'clangd', 'clojure_lsp',
+  local servers = { 'bashls', 'clangd', 'clojure_lsp',
         'cmake', 'cssmodules_ls', 'diagnosticls', 'dockerls', 'lemminx',
         'golangci_lint_ls', 'gopls', 'kotlin_language_server', 'metals',
         'rls', 'sqlls', 'vimls', 'yamlls', 'cssls', 'html', 'jsonls'}
   for _, lsp in pairs(servers) do
     require('lspconfig')[lsp].setup{on_attach = on_attach, capabilities = capabilities}
   end
+  require('lspconfig')['beancount'].setup{
+    on_attach = on_attach,
+    capabilities = capabilities,
+    init_options = {
+      journal_file = "/Users/zhanghf/Desktop/beancount/main.bean",
+    }
+  }
+
 EOF
 endif
 
