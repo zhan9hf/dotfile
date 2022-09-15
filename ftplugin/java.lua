@@ -1,5 +1,7 @@
-local project_name = vim.fn.fnamemodify(vim.fn.getcwd(), ':p:h:t')
-local workspace_dir = '/Users/zhanghf/Documents/workspace/' .. project_name
+local root_markers = {'gradlew', '.git'}
+local root_dir = require('jdtls.setup').find_root(root_markers)
+local home = os.getenv('HOME')
+local workspace_folder = home .. "/.local/share/eclipse/" .. vim.fn.fnamemodify(root_dir, ":p:h:t")
 
 -- format
 local function nvim_create_augroup(group_name,definitions)
@@ -14,11 +16,10 @@ end
 
 local function java_lsp_before_save()
     local defs = {}
-    local ext = vim.fn.expand('%:e')
-    table.insert(defs,{"BufWritePre", '*.'..ext,
-        "lua vim.lsp.buf.formatting_sync(nil,1000)"})
-    table.insert(defs,{"BufWritePre", '*.'..ext,
+    table.insert(defs,{"BufWritePre", '*.'..'java',
         "lua require'jdtls'.organize_imports()"})
+    -- table.insert(defs,{"BufWritePre", '*.'..'java',
+    --     "lua vim.lsp.buf.formatting_sync(nil, 2000)"})
     nvim_create_augroup('java_lsp_before_save',defs)
 end
 
@@ -26,6 +27,7 @@ local opts = { noremap=true, silent=true }
 local on_attach = function(client, bufnr)
     require('jdtls').setup_dap({ hotcodereplace = 'auto' })
     require'jdtls.setup'.add_commands()
+    -- require('jdtls.dap').setup_dap_main_class_configs()
     -- Enable completion triggered by <c-x><c-o>
     vim.api.nvim_buf_set_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
     -- Mappings.
@@ -37,6 +39,7 @@ local on_attach = function(client, bufnr)
     vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gR', '<cmd>lua vim.lsp.buf.rename()<cr>', opts)
     vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gr', '<cmd>References<cr>', opts)
     vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gt', '<cmd>TypeDefinitions<cr>', opts)
+    vim.api.nvim_buf_set_keymap(bufnr, 'n', 'g=', '<cmd>lua vim.lsp.buf.formatting_sync(nil, 2000)<cr>', opts)
 
     -- java
     -- vim.api.nvim_buf_set_keymap(bufnr, 'n', 'crv', require('jdtls').extract_variable(), opts)
@@ -97,22 +100,22 @@ local config = {
     -- See: https://github.com/eclipse/eclipse.jdt.ls#running-from-the-command-line
     cmd = {
 
-        'java',
+        '/usr/local/opt/openjdk@18/bin/java',
         '-Declipse.application=org.eclipse.jdt.ls.core.id1',
         '-Dosgi.bundles.defaultStartLevel=4',
         '-Declipse.product=org.eclipse.jdt.ls.core.product',
         '-Dlog.protocol=true',
         '-Dlog.level=ALL',
-        '-Xms1g',
+        '-Xms4g',
         '--add-modules=ALL-SYSTEM',
         '--add-opens', 'java.base/java.util=ALL-UNNAMED',
         '--add-opens', 'java.base/java.lang=ALL-UNNAMED',
-        '-javaagent:/Users/zhanghf/.m2/repository/org/projectlombok/lombok/1.18.22/lombok-1.18.22.jar',
-        '-jar', '/usr/local/opt/jdtls/libexec/plugins/org.eclipse.equinox.launcher_1.6.400.v20210924-0641.jar',
+        '-javaagent:/Users/zhanghf/.config/nvim/lombok.jar',
+        '-jar', vim.fn.glob('/usr/local/opt/jdtls/libexec/plugins/org.eclipse.equinox.launcher_*.jar'),
 
         '-configuration', '/usr/local/opt/jdtls/libexec/config_mac',
 
-        '-data', workspace_dir,
+        '-data', workspace_folder,
     },
 
     root_dir = require('jdtls.setup').find_root({
@@ -143,9 +146,9 @@ local config = {
                         name = "JavaSE-18",
                         path = "/usr/local/opt/openjdk@18",
                     },
-                }
-            };
-        }
+                },
+            },
+        },
     },
 
     -- Language server `initializationOptions`

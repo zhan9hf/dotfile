@@ -80,7 +80,7 @@ Plug 'folke/which-key.nvim'
 
 Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 Plug 'junegunn/fzf.vim'
-Plug 'ibhagwan/fzf-lua', {'branch': 'main'}
+" Plug 'ibhagwan/fzf-lua', {'branch': 'main'}
 Plug 'gfanto/fzf-lsp.nvim'
 
 " Plug 'kyazdani42/nvim-tree.lua'
@@ -96,7 +96,6 @@ Plug 'lewis6991/gitsigns.nvim'
 " Lang
 " -----------------------------------------------------------------------------
 Plug 'godlygeek/tabular'
-Plug 'preservim/vim-markdown'
 Plug 'iamcco/markdown-preview.nvim', { 'do': 'cd app && yarn install' }
 Plug 'mhinz/vim-rfc'
 Plug 'neovim/nvim-lspconfig'
@@ -109,7 +108,7 @@ Plug 'nvim-orgmode/orgmode'
 " -----------------------------------------------------------------------------
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
 
-Plug 'github/copilot.vim'
+" Plug 'github/copilot.vim'
 Plug 'williamboman/nvim-lsp-installer'
 Plug 'hrsh7th/cmp-nvim-lsp'
 Plug 'hrsh7th/cmp-buffer'
@@ -480,10 +479,10 @@ lua << EOF
     ["<leader>fjv"] = { "<cmd>lua require('fzf-lua').dap_variables()<cr>", "show dap variables" },
     ["<leader>fjf"] = { "<cmd>lua require('fzf-lua').dap_frames()<cr>", "show dap frames" },
     ["<leader>fjm"] = { "<cmd>lua require('jdtls.dap').setup_dap_main_class_configs()<cr>", "find main classes" },
-    -- ["<leader>e"] = { "<Cmd>NvimTreeToggle<CR>", "toggle explorer" },
+    ["<leader>e"] = { "<Cmd>NvimTreeToggle<CR>", "toggle explorer" },
     ["<leader>e"] = { "<Cmd>call CocAction('runCommand','explorer')<CR>", "toggle explorer" },
-    -- ["<leader>n"] = { "<Cmd>NvimTreeFindFile<CR>", "reveal to current buffer" },
-    -- ["<leader>r"] = { "<Cmd>NvimTreeRefresh<CR>", "refresh explorer" },
+    ["<leader>n"] = { "<Cmd>NvimTreeFindFile<CR>", "reveal to current buffer" },
+    ["<leader>r"] = { "<Cmd>NvimTreeRefresh<CR>", "refresh explorer" },
     ["<leader>r"] = { "<Cmd>call CocAction('runCommand', 'explorer.doAction', 'closest', ['reveal:0'], [['relative', 0, 'file']])<CR>", "reveal to current buffer" },
     ["<leader>c"] = { "<Cmd>cclose<bar>lclose<CR>", "close quickfix/location list" },
     ["<leader>z"] = { "<Cmd>MaximizerToggle!<CR>", "toggle maximizer" },
@@ -676,15 +675,17 @@ lua << EOF
   local function lsp_before_save()
     local defs = {}
     local ext = vim.fn.expand('%:e')
-    if ext ~= 'bean' then
-      table.insert(defs,{"BufWritePre", '*.'..ext,
-        "lua vim.lsp.buf.formatting_sync(nil,1000)"})
-    end
 
     if ext == 'go' then
       table.insert(defs,{"BufWritePre","*.go",
-              "lua go_organize_imports_sync(1000)"})
+              "lua go_organize_imports_sync(2000)"})
     end
+
+    -- if ext ~= 'bean' and ext ~= 'java' then
+    --   table.insert(defs,{"BufWritePre", '*.'..ext,
+    --     "lua vim.lsp.buf.formatting_sync(nil, 2000)"})
+    -- end
+
     nvim_create_augroup('lsp_before_save',defs)
   end
 
@@ -707,6 +708,7 @@ lua << EOF
     vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gR', '<cmd>lua vim.lsp.buf.rename()<CR>', opts)
     vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gr', '<cmd>References<cr>', opts)
     vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gt', '<cmd>TypeDefinitions<cr>', opts)
+    vim.api.nvim_buf_set_keymap(bufnr, 'n', 'g=', '<cmd>lua vim.lsp.buf.formatting_sync(nil, 2000)<cr>', opts)
 
     lsp_before_save()
   end
@@ -753,9 +755,9 @@ lua << EOF
       ['<C-b>'] = cmp.mapping.scroll_docs(-4),
       ['<C-f>'] = cmp.mapping.scroll_docs(4),
       ['<C-e>'] = cmp.mapping.abort(),
-      ['<C-g>'] = cmp.mapping(function(fallback) -- Copilot
-        vim.api.nvim_feedkeys(vim.fn['copilot#Accept'](vim.api.nvim_replace_termcodes('<Tab>', true, true, true)), 'n', true)
-      end),
+      -- ['<C-g>'] = cmp.mapping(function(fallback) -- Copilot
+      --   vim.api.nvim_feedkeys(vim.fn['copilot#Accept'](vim.api.nvim_replace_termcodes('<Tab>', true, true, true)), 'n', true)
+      -- end),
       ['<CR>'] = function(fallback)
         if cmp.visible() then
           cmp.confirm()
@@ -849,6 +851,7 @@ lua << EOF
   for _, lsp in pairs(servers) do
     require('lspconfig')[lsp].setup{on_attach = on_attach, capabilities = capabilities}
   end
+
   require('lspconfig')['beancount'].setup{
     on_attach = on_attach,
     capabilities = capabilities,
@@ -856,6 +859,15 @@ lua << EOF
       journal_file = "/Users/zhanghf/Desktop/beancount/main.bean",
     }
   }
+
+  -- require('lspconfig')['java_language_server'].setup{
+  --   on_attach = on_attach,
+  --   capabilities = capabilities,
+  --   cmd = {
+  --     "/Users/zhanghf/src/java-language-server/dist/lang_server_mac.sh",
+  --     "-javaagent:/Users/zhanghf/.config/nvim/lombok.jar",
+  --   },
+  -- }
 
 EOF
 endif
@@ -882,7 +894,7 @@ augroup end
 augroup filetype_set
   autocmd!
   autocmd FileType markdown,text setlocal wrap
-  autocmd FileType yaml,vim setlocal expandtab shiftwidth=2 softtabstop=2 tabstop=2
+  autocmd FileType yaml,vim,cpp,c setlocal expandtab shiftwidth=2 softtabstop=2 tabstop=2
 augroup end
 
 augroup unset_paste
