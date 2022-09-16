@@ -1,4 +1,25 @@
 {
     "suggest.minTriggerInputLength": 2,
-    "explorer.icon.enableNerdfont": true
+    "suggest.noselect": true,
+    "suggest.maxCompleteItemCount": 200,
+    "explorer.icon.enableNerdfont": true,
+    "yank.highlight.duration": 200,
+    "java.jdt.ls.vmargs": "-javaagent:/Users/zhanghf/.vim/lombok.jar",
+    "java.home": "/usr/local/opt/openjdk@17",
+    "java.configuration.runtimes": [
+        {
+            "name": "JavaSE-1.8",
+            "path": "/usr/local/opt/openjdk@8"
+        },
+        {
+            "name": "JavaSE-11",
+            "path": "/usr/local/opt/openjdk@11"
+        },
+        {
+            "name": "JavaSE-17",
+            "path": "/usr/local/opt/openjdk@17",
+            "default": true
+        }
+    ],
+    "java.completion.maxResults": 200
 }
