@@ -561,7 +561,6 @@ if !empty(glob('~/.vim/bundle/coc.nvim'))
     " autocmd vimenter * if !argc() | Startify | endif
     autocmd BufEnter * if (!has('vim_starting') && winnr('$') == 1 && &filetype ==# 'coc-explorer') |
           \ q | endif
-    autocmd FileType coc-explorer set laststatus=0 noshowmode noruler
     autocmd FileType coc-explorer setl statusline=coc-explorer
   augroup end
 
