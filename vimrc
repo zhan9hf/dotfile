@@ -24,30 +24,32 @@ endif
 silent! if plug#begin('~/.vim/bundle')
 
 " -----------------------------------------------------------------------------
+" Lib
+" -----------------------------------------------------------------------------
+Plug 'nvim-lua/plenary.nvim'
+
+" -----------------------------------------------------------------------------
 " UI
 " -----------------------------------------------------------------------------
 Plug 'junegunn/seoul256.vim'
-Plug 'morhetz/gruvbox'
-Plug 'LunarVim/onedarker.nvim'
-Plug 'sonph/onehalf', { 'rtp': 'vim' }
+Plug 'ellisonleao/gruvbox.nvim'
 
 Plug 'mhinz/vim-startify'
 Plug 'chrisbra/unicode.vim', {'on': ['UnicodeName', 'UnicodeTable']}
-if has('nvim-0.5')
-  Plug 'neovim/nvim-lspconfig'
 
-  Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
-  Plug 'p00f/nvim-ts-rainbow'
-  Plug 'windwp/nvim-ts-autotag'
-  Plug 'andymass/vim-matchup'
-  Plug 'nvim-treesitter/nvim-treesitter-textobjects'
+Plug 'neovim/nvim-lspconfig'
 
-  Plug 'norcalli/nvim-colorizer.lua'
-  Plug 'lukas-reineke/indent-blankline.nvim'
+Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
+Plug 'p00f/nvim-ts-rainbow'
+Plug 'windwp/nvim-ts-autotag'
+Plug 'andymass/vim-matchup'
+Plug 'nvim-treesitter/nvim-treesitter-textobjects'
 
-  Plug 'nvim-lualine/lualine.nvim'
-  Plug 'kyazdani42/nvim-web-devicons'
-endif
+Plug 'norcalli/nvim-colorizer.lua'
+Plug 'lukas-reineke/indent-blankline.nvim'
+
+Plug 'kyazdani42/nvim-web-devicons'
+Plug 'nvim-lualine/lualine.nvim'
 
 " -----------------------------------------------------------------------------
 " Edit
@@ -55,13 +57,10 @@ endif
 Plug 'junegunn/vim-peekaboo'
 Plug 'tpope/vim-surround'
 Plug 'tpope/vim-unimpaired'
-" Plug 'tpope/vim-sleuth'
 Plug 'tpope/vim-repeat'
 Plug 'mbbill/undotree'
-if has('nvim-0.5')
-  Plug 'numToStr/Comment.nvim'
-  Plug 'windwp/nvim-autopairs'
-endif
+Plug 'numToStr/Comment.nvim'
+Plug 'windwp/nvim-autopairs'
 Plug 'brglng/vim-im-select'
 
 " -----------------------------------------------------------------------------
@@ -69,40 +68,34 @@ Plug 'brglng/vim-im-select'
 " -----------------------------------------------------------------------------
 Plug 't9md/vim-choosewin'
 Plug 'szw/vim-maximizer'
-Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
-Plug 'junegunn/fzf.vim'
 Plug 'rhysd/clever-f.vim'
 Plug 'junegunn/vim-slash'
 Plug 'folke/which-key.nvim'
+
+Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
+Plug 'junegunn/fzf.vim'
 
 " -----------------------------------------------------------------------------
 " Git
 " -----------------------------------------------------------------------------
 Plug 'rhysd/committia.vim'
 Plug 'tpope/vim-fugitive'
-" if has('nvim-0.5')
-"   Plug 'nvim-lua/plenary.nvim'
-"   Plug 'lewis6991/gitsigns.nvim'
-" else
-"   Plug 'mhinz/vim-signify'
-" endif
 
 " -----------------------------------------------------------------------------
 " Lang
 " -----------------------------------------------------------------------------
 " Decompile Java class files using CFR.
 " Requires curl to download CFR JAR file.
-Plug 'jrubber/cfr.vim'
+" Plug 'jrubber/cfr.vim'
+Plug 'iamcco/markdown-preview.nvim', { 'do': 'cd app && yarn install' }
 Plug 'mhinz/vim-rfc'
-" hledger
-Plug 'ledger/vim-ledger'
 Plug 'nathangrigg/vim-beancount'
 
 " -----------------------------------------------------------------------------
 " Completion
 " -----------------------------------------------------------------------------
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
-Plug 'github/copilot.vim'
+" Plug 'github/copilot.vim'
 
 call plug#end()
 endif
@@ -157,28 +150,26 @@ endif
 " endfunction
 " let &statusline = s:StatuslineExpr()
 
-if has('nvim')
-  " https://github.com/neovim/neovim/issues/2897#issuecomment-115464516
-  let g:terminal_color_0 = '#4e4e4e'
-  let g:terminal_color_1 = '#d68787'
-  let g:terminal_color_2 = '#5f865f'
-  let g:terminal_color_3 = '#d8af5f'
-  let g:terminal_color_4 = '#85add4'
-  let g:terminal_color_5 = '#d7afaf'
-  let g:terminal_color_6 = '#87afaf'
-  let g:terminal_color_7 = '#d0d0d0'
-  let g:terminal_color_8 = '#626262'
-  let g:terminal_color_9 = '#d75f87'
-  let g:terminal_color_10 = '#87af87'
-  let g:terminal_color_11 = '#ffd787'
-  let g:terminal_color_12 = '#add4fb'
-  let g:terminal_color_13 = '#ffafaf'
-  let g:terminal_color_14 = '#87d7d7'
-  let g:terminal_color_15 = '#e4e4e4'
+" https://github.com/neovim/neovim/issues/2897#issuecomment-115464516
+let g:terminal_color_0 = '#4e4e4e'
+let g:terminal_color_1 = '#d68787'
+let g:terminal_color_2 = '#5f865f'
+let g:terminal_color_3 = '#d8af5f'
+let g:terminal_color_4 = '#85add4'
+let g:terminal_color_5 = '#d7afaf'
+let g:terminal_color_6 = '#87afaf'
+let g:terminal_color_7 = '#d0d0d0'
+let g:terminal_color_8 = '#626262'
+let g:terminal_color_9 = '#d75f87'
+let g:terminal_color_10 = '#87af87'
+let g:terminal_color_11 = '#ffd787'
+let g:terminal_color_12 = '#add4fb'
+let g:terminal_color_13 = '#ffafaf'
+let g:terminal_color_14 = '#87d7d7'
+let g:terminal_color_15 = '#e4e4e4'
 
-  "For Neovim 0.1.3 and 0.1.4 < https://github.com/neovim/neovim/pull/2198 >
-  let $NVIM_TUI_ENABLE_TRUE_COLOR=1
-endif
+"For Neovim 0.1.3 and 0.1.4 < https://github.com/neovim/neovim/pull/2198 >
+let $NVIM_TUI_ENABLE_TRUE_COLOR=1
 
 " -----------------------------------------------------------------------------
 " Edit
@@ -251,14 +242,22 @@ xnoremap > >gv
 " PLUGINS {{{
 " ============================================================================
 
-" ----------------------------------------------------------------------------
-" colorscheme
-" ----------------------------------------------------------------------------
-if has_key(g:plugs, 'seoul256.vim')
-  colorscheme seoul256
+if !empty(glob('~/.vim/bundle/gruvbox.nvim'))
+  colorscheme gruvbox
+  augroup update_bat_theme
+    autocmd!
+    autocmd colorscheme * call ToggleBatEnvVar()
+  augroup end
+  function ToggleBatEnvVar()
+    if (&background == "light")
+        let $BAT_THEME='gruvbox-light'
+    else
+        let $BAT_THEME='gruvbox-dark'
+    endif
+  endfunction
 endif
 
-if has_key(g:plugs, 'vim-startify')
+if !empty(glob('~/.vim/bundle/vim-startify'))
   let g:startify_change_to_vcs_root = 1
   let g:startify_lists = [
       \ { 'type': 'dir',       'header': ['   MRU '. getcwd()] },
@@ -269,10 +268,7 @@ if has_key(g:plugs, 'vim-startify')
       \ ]
 endif
 
-" -----------------------------------------------------------------------------
-" nvim-colorizer.lua
-" -----------------------------------------------------------------------------
-if has_key(g:plugs, 'nvim-colorizer.lua')
+if !empty(glob('~/.vim/bundle/nvim-colorizer.lua'))
 lua <<EOF
   require'colorizer'.setup({ "*" }, {
     RGB = true, -- #RGB hex codes
@@ -286,29 +282,43 @@ lua <<EOF
 EOF
 endif
 
-" -----------------------------------------------------------------------------
-" Comment.nvim
-" -----------------------------------------------------------------------------
-if has_key(g:plugs, 'Comment.nvim')
+if !empty(glob('~/.vim/bundle/Comment.nvim'))
   lua require('Comment').setup()
 endif
 
-" -----------------------------------------------------------------------------
-" nvim-autopairs
-" -----------------------------------------------------------------------------
-if has_key(g:plugs, 'nvim-autopairs')
+if !empty(glob('~/.vim/bundle/nvim-autopairs'))
   lua require('nvim-autopairs').setup{}
 endif
 
-" -----------------------------------------------------------------------------
-" indent-blankline.nvim
-" -----------------------------------------------------------------------------
-if has_key(g:plugs, 'indent-blankline.nvim')
+if !empty(glob('~/.vim/bundle/indent-blankline.nvim'))
 lua <<EOF
   require("indent_blankline").setup {
     use_treesitter = true,
     buftype_exclude = { 'terminal', 'nofile' },
-    filetype_exclude = { 'help', 'packer', 'startify' },
+    filetype_exclude = {
+      "startify",
+      "dashboard",
+      "dotooagenda",
+      "log",
+      "fugitive",
+      "gitcommit",
+      "packer",
+      "vimwiki",
+      "markdown",
+      "json",
+      "txt",
+      "vista",
+      "help",
+      "todoist",
+      "NvimTree",
+      "peekaboo",
+      "git",
+      -- "TelescopePrompt",
+      "undotree",
+      "flutterToolsOutline",
+      "coc-explorer",
+      "" -- for all buffers without a file type
+    },
     space_char_blankline = " ",
     show_current_context = true,
     show_current_context_start = true,
@@ -316,28 +326,18 @@ lua <<EOF
 EOF
 endif
 
-if has_key(g:plugs, 'lualine.nvim')
+if !empty(glob('~/.vim/bundle/lualine.nvim'))
   lua require('lualine').setup()
 endif
 
-" -----------------------------------------------------------------------------
-" vim-choosewin
-" -----------------------------------------------------------------------------
-if has_key(g:plugs, 'vim-choosewin')
+if !empty(glob('~/.vim/bundle/vim-choosewin'))
   nmap - <Plug>(choosewin)
-endif
-
-" -----------------------------------------------------------------------------
-" gitsigns.nvim
-" -----------------------------------------------------------------------------
-if has_key(g:plugs, 'gitsigns.nvim')
-  lua require('gitsigns').setup()
 endif
 
 " -----------------------------------------------------------------------------
 " fzf
 " -----------------------------------------------------------------------------
-if has_key(g:plugs, 'fzf.vim')
+if !empty(glob('~/.vim/bundle/fzf.vim'))
   let $FZF_DEFAULT_OPTS .= ' --inline-info'
 
   " All files
@@ -363,9 +363,9 @@ if has_key(g:plugs, 'fzf.vim')
         \ 'header':     ['fg', 'Comment'] }
 
   if exists('$TMUX')
-    let g:fzf_layout = { 'tmux': '-p90%,60%' }
+    let g:fzf_layout = { 'tmux': '-p95%,70%' }
   else
-    let g:fzf_layout = { 'window': { 'width': 0.9, 'height': 0.6 } }
+    let g:fzf_layout = { 'window': { 'width': 0.95, 'height': 0.7 } }
   endif
 
   command! -bar MoveBack if &buftype == 'nofile' && (winwidth(0) < &columns / 3 || winheight(0) < &lines / 3) | execute "normal! \<c-w>\<c-p>" | endif
@@ -412,7 +412,7 @@ endif
 " -----------------------------------------------------------------------------
 " which-key
 " -----------------------------------------------------------------------------
-if has_key(g:plugs, 'which-key.nvim')
+if !empty(glob('~/.vim/bundle/which-key.nvim'))
 lua << EOF
   require("which-key").setup{
     layout = {
@@ -427,10 +427,11 @@ lua << EOF
     ["<leader>f"] = { name = "+fzf" },
     ["<leader>ff"] = { ":MoveBack<BAR>Files<CR>", "find files" },
     ["<leader>fb"] = { ":MoveBack<BAR>Buffers<CR>", "find buffers" },
-    ["<leader>fg"] = { ":Ag <C-R><C-W><CR>", "grep" },
+    ["<leader>fg"] = { ":Rg <C-R><C-W><CR>", "grep" },
+    ["<leader>ft"] = { ":Rg<CR>", "interactive grep" },
     ["<leader>fr"] = { ":History<CR>", "show recent files" },
     ["<leader>fy"] = { ":History/<CR>", "yank history" },
-    ["<leader>fs"] = { ":GFiles?<CR>", "git status" },
+    ["<leader>f?"] = { ":GFiles?<CR>", "git status" },
     ["<leader>fc"] = { ":BCommits<CR>", "git commit for current buffer" },
     ["<leader>fm"] = { ":Maps<CR>", "show key maps" },
     ["<leader>e"] = { ":CocCommand explorer<CR>", "toggle explorer" },
@@ -451,7 +452,7 @@ endif
 " -----------------------------------------------------------------------------
 " nvim-treesitter
 " -----------------------------------------------------------------------------
-if has_key(g:plugs, 'nvim-treesitter')
+if !empty(glob('~/.vim/bundle/nvim-treesitter'))
 lua <<EOF
   require'nvim-treesitter.configs'.setup {
   ensure_installed = "all", -- one of "all", "maintained" (parsers with maintainers), or a list of languages
@@ -495,7 +496,7 @@ endif
 " -----------------------------------------------------------------------------
 " coc.nvim
 " -----------------------------------------------------------------------------
-if has_key(g:plugs, 'coc.nvim')
+if !empty(glob('~/.vim/bundle/coc.nvim'))
   " Use tab for trigger completion with characters ahead and navigate.
   " Use command ':verbose imap <tab>' to make sure tab is not mapped by other plugin.
   function! s:check_back_space() abort
@@ -556,11 +557,11 @@ if has_key(g:plugs, 'coc.nvim')
     autocmd FileType typescript,json setl formatexpr=CocAction('formatSelected')
     " Update signature help on jump placeholder.
     autocmd User CocJumpPlaceholder call CocActionAsync('showSignatureHelp')
-    " autocmd vimenter * if !argc() | call CocActionAsync('runCommand', 'explorer') | Startify | endif
-    autocmd vimenter * if !argc() | Startify | endif
+    autocmd vimenter * if !argc() | call CocActionAsync('runCommand', 'explorer') | Startify | endif
+    " autocmd vimenter * if !argc() | Startify | endif
     autocmd BufEnter * if (!has('vim_starting') && winnr('$') == 1 && &filetype ==# 'coc-explorer') |
           \ q | endif
-    " autocmd FileType coc-explorer set laststatus=0 noshowmode noruler
+    autocmd FileType coc-explorer set laststatus=0 noshowmode noruler
     autocmd FileType coc-explorer setl statusline=coc-explorer
   augroup end
 

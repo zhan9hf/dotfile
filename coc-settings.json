@@ -1,47 +1,4 @@
 {
-    "languageserver": {
-        "ccls": {
-            "command": "ccls",
-            "filetypes": ["c", "cpp", "objc", "objcpp"],
-            "rootPatterns": [".ccls", "compile_commands.json", ".vim/", ".git/", ".hg/"],
-            "initializationOptions": {
-                "cache": {
-                    "directory": "/tmp/ccls"
-                },
-                "clang": {
-                    "resourceDir": "/Library/Developer/CommandLineTools/usr/lib/clang/12.0.0",
-                    "extraArgs": [
-                        "-isystem",
-                        "/Library/Developer/CommandLineTools/usr/include/c++/v1",
-                        "-I",
-                        "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include"
-                    ]
-                }
-            }
-        },
-        "golang": {
-            "command": "gopls",
-            "rootPatterns": ["go.mod"],
-            "disableWorkspaceFolders": true,
-            "filetypes": ["go"]
-        },
-        "dockerfile": {
-            "command": "docker-langserver",
-            "filetypes": ["dockerfile"],
-            "args": ["--stdio"]
-        },
-        "bash": {
-            "command": "bash-language-server",
-            "args": ["start"],
-            "filetypes": ["sh"],
-            "ignoredRootPaths": ["~"]
-        },
-        "sql": {
-            "command": "sql-language-server",
-            "args": ["up", "--method", "stdio"],
-            "filetypes": ["sql", "mysql"]
-        }
-    },
     "suggest.minTriggerInputLength": 2,
-    "diagnostic.displayByAle": true
+    "explorer.icon.enableNerdfont": true
 }

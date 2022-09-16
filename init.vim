@@ -479,7 +479,6 @@ lua << EOF
     ["<leader>fjv"] = { "<cmd>lua require('fzf-lua').dap_variables()<cr>", "show dap variables" },
     ["<leader>fjf"] = { "<cmd>lua require('fzf-lua').dap_frames()<cr>", "show dap frames" },
     ["<leader>fjm"] = { "<cmd>lua require('jdtls.dap').setup_dap_main_class_configs()<cr>", "find main classes" },
-    ["<leader>e"] = { "<Cmd>NvimTreeToggle<CR>", "toggle explorer" },
     ["<leader>e"] = { "<Cmd>call CocAction('runCommand','explorer')<CR>", "toggle explorer" },
     ["<leader>n"] = { "<Cmd>NvimTreeFindFile<CR>", "reveal to current buffer" },
     ["<leader>r"] = { "<Cmd>NvimTreeRefresh<CR>", "refresh explorer" },
