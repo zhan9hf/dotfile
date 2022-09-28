@@ -127,11 +127,11 @@ augroup end
 " }}}
 
 " plugins {{{
-if !empty(glob('~/.vim/bundle/gruvbox.nvim'))
+if !empty(glob('~/.config/nvim/bundle/gruvbox.nvim'))
   colorscheme gruvbox
 endif
 
-if !empty(glob('~/.vim/bundle/nvim-colorizer.lua'))
+if !empty(glob('~/.config/nvim/bundle/nvim-colorizer.lua'))
 lua <<EOF
   require'colorizer'.setup({ "*" }, {
     RGB = true, -- #RGB hex codes
@@ -145,15 +145,15 @@ lua <<EOF
 EOF
 endif
 
-if !empty(glob('~/.vim/bundle/Comment.nvim'))
+if !empty(glob('~/.config/nvim/bundle/Comment.nvim'))
   lua require('Comment').setup()
 endif
 
-if !empty(glob('~/.vim/bundle/nvim-autopairs'))
+if !empty(glob('~/.config/nvim/bundle/nvim-autopairs'))
   lua require('nvim-autopairs').setup{}
 endif
 
-if !empty(glob('~/.vim/bundle/indent-blankline.nvim'))
+if !empty(glob('~/.config/nvim/bundle/indent-blankline.nvim'))
 lua <<EOF
   require("indent_blankline").setup {
     use_treesitter = true,
@@ -180,11 +180,11 @@ lua <<EOF
 EOF
 endif
 
-if !empty(glob('~/.vim/bundle/vim-choosewin'))
+if !empty(glob('~/.config/nvim/bundle/vim-choosewin'))
   nmap - <Plug>(choosewin)
 endif
 
-if !empty(glob('~/.vim/bundle/which-key.nvim'))
+if !empty(glob('~/.config/nvim/bundle/which-key.nvim'))
 lua << EOF
   require("which-key").setup{
     layout = {
@@ -203,13 +203,13 @@ lua << EOF
 EOF
 endif
 
-if !empty(glob('~/.vim/bundle/nvim-bqf'))
+if !empty(glob('~/.config/nvim/bundle/nvim-bqf'))
   augroup bqfaucmd
     autocmd FileType list lua require('bqf.magicwin.handler').attach()
   augroup end
 endif
 
-if !empty(glob('~/.vim/bundle/nvim-hlslens'))
+if !empty(glob('~/.config/nvim/bundle/nvim-hlslens'))
   noremap <silent> n <Cmd>execute('normal! ' . v:count1 . 'n')<CR>
         \<Cmd>lua require('hlslens').start()<CR>
   noremap <silent> N <Cmd>execute('normal! ' . v:count1 . 'N')<CR>
@@ -220,17 +220,17 @@ if !empty(glob('~/.vim/bundle/nvim-hlslens'))
   noremap g# g#<Cmd>lua require('hlslens').start()<CR>
 endif
 
-if !empty(glob('~/.vim/bundle/remember.nvim'))
+if !empty(glob('~/.config/nvim/bundle/remember.nvim'))
   lua require('remember')
 endif
 
-if !empty(glob('~/.vim/bundle/vim-gutentags'))
+if !empty(glob('~/.config/nvim/bundle/vim-gutentags'))
   let g:gutentags_project_root = ['.git', '.svn', '.hg', '.project']
   let g:gutentags_ctags_tagfile = '.tags'
   let g:gutentags_ctags_extra_args = ['--output-format=e-ctags']
 endif
 
-if !empty(glob('~/.vim/bundle/nvim-treesitter'))
+if !empty(glob('~/.config/nvim/bundle/nvim-treesitter'))
 lua <<EOF
   require'nvim-treesitter.configs'.setup {
   ensure_installed = "all", -- one of "all", "maintained" (parsers with maintainers), or a list of languages
@@ -271,7 +271,7 @@ lua <<EOF
 EOF
 endif
 
-if !empty(glob('~/.vim/bundle/coc.nvim'))
+if !empty(glob('~/.config/nvim/bundle/coc.nvim'))
   function! s:check_back_space() abort
     let col = col('.') - 1
     return !col || getline('.')[col - 1]  =~# '\s'
