@@ -29,7 +29,7 @@
   "suggest.enablePreselect": false,
   "suggest.maxCompleteItemCount": 200,
   "yank.highlight.duration": 200,
-  "java.jdt.ls.vmargs": "-javaagent:/Users/zhanghf/.vim/lombok.jar",
+  "java.jdt.ls.vmargs": "-javaagent:/Users/zhanghf/.config/nvim/lombok.jar",
   "java.home": "/usr/local/opt/openjdk@17",
   "java.configuration.runtimes": [
     {
