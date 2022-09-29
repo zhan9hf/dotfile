@@ -38,6 +38,8 @@ Plug 'editorconfig/editorconfig-vim'
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
 " Plug 'neoclide/coc.nvim', {'branch': 'master', 'do': 'yarn install --frozen-lockfile'}
 " Plug 'github/copilot.vim'
+Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
+Plug 'junegunn/fzf.vim'
 call plug#end()
 endif
 " }}}
@@ -313,6 +315,34 @@ if !empty(glob('~/.config/nvim/bundle/coc.nvim'))
     execute 'CocList grep '.word
   endfunction
 
+  function! s:coc_qf_diagnostic() abort
+    if !get(g:, 'coc_service_initialized', 0)
+      return
+    endif
+    let diagnostic_list = CocAction('diagnosticList')
+    let items = []
+    let loc_ranges = []
+    for d in diagnostic_list
+      let text = printf('[%s%s] %s', (empty(d.source) ? 'coc.nvim' : d.source), (d.code ? ' ' . d.code : ''), split(d.message, '\n')[0])
+      let item = {'filename': d.file, 'lnum': d.lnum, 'end_lnum': d.end_lnum, 'col': d.col, 'end_col': d.end_col, 'text': text, 'type': d.severity[0]}
+      call add(loc_ranges, d.location.range)
+      call add(items, item)
+    endfor
+    call setqflist([], ' ', {'title': 'CocDiagnosticList', 'items': items, 'context': {'bqf': {'lsp_ranges_hl': loc_ranges}}})
+    botright copen
+  endfunction
+
+  function! s:coc_qf_jump2loc(locs) abort
+    let loc_ranges = map(deepcopy(a:locs), 'v:val.range')
+    call setloclist(0, [], ' ', {'title': 'CocLocationList', 'items': a:locs, 'context': {'bqf': {'lsp_ranges_hl': loc_ranges}}})
+    let winid = getloclist(0, {'winid': 0}).winid
+    if winid == 0
+      rightbelow lwindow
+    else
+      call win_gotoid(winid)
+    endif
+  endfunction
+
   let g:copilot_no_tab_map = v:true
   let g:coc_enable_locationlist = 0
 
@@ -421,18 +451,18 @@ if !empty(glob('~/.config/nvim/bundle/coc.nvim'))
   vnoremap <silent><nowait><expr> <C-f> coc#float#has_scroll() ? coc#float#scroll(1) : "\<C-f>"
   vnoremap <silent><nowait><expr> <C-b> coc#float#has_scroll() ? coc#float#scroll(0) : "\<C-b>"
 
-  nmap <leader>ff :CocList files<CR>
-  nmap <leader>fb :CocList buffers<CR>
-  nmap <leader>fr :CocList mru<CR>
-  nmap <leader>s :CocList gstatus<CR>
-  nmap <leader>c :CocList bcommits<CR>
-  nmap <leader>o :CocList outline<CR>
+  " nmap <leader>ff :CocList files<CR>
+  " nmap <leader>fb :CocList buffers<CR>
+  " nmap <leader>fr :CocList mru<CR>
+  " nmap <leader>s :CocList gstatus<CR>
+  " nmap <leader>c :CocList bcommits<CR>
+  " nmap <leader>o :CocList outline<CR>
+  " nmap <leader>y :<C-u>CocList -A --normal yank<CR>
+  " nmap <leader>g :CocList grep<CR>
+  " vmap <leader>g :<C-u><C-u>call <SID>grep_from_selected(visualmode())<CR><CR>
+  nmap <leader>d :call <SID>coc_qf_diagnostic()<CR>
   nmap <leader>e :CocCommand explorer<CR>
   nmap <leader>r <Cmd>call CocAction('runCommand', 'explorer.doAction', 'closest', ['reveal:0'], [['relative', 0, 'file']])<CR><CR>
-  nmap <leader>d :<C-u>CocList diagnostics<CR>
-  nmap <leader>y :<C-u>CocList -A --normal yank<CR>
-  nmap <leader>g :CocList grep<CR>
-  vmap <leader>g :<C-u><C-u>call <SID>grep_from_selected(visualmode())<CR><CR>
   nmap <leader>u :call CocAction('runCommand', 'git.chunkUndo')<CR>
 
   augroup cocaucmd
@@ -446,9 +476,60 @@ if !empty(glob('~/.config/nvim/bundle/coc.nvim'))
     autocmd CursorHold * silent call CocActionAsync('highlight')
     autocmd BufWritePre *.java,*.go
           \ | silent! call CocAction('runCommand', 'editor.action.organizeImport')
+    autocmd User CocLocationsChange call s:coc_qf_jump2loc(g:coc_jump_locations)
   augroup end
 
   " Add `:Fold` command to fold current buffer.
   command! -nargs=? Fold :call CocAction('fold', <f-args>)
+endif
+
+if !empty(glob('~/.config/nvim/bundle/fzf.vim'))
+  let $FZF_DEFAULT_OPTS .= ' --inline-info'
+
+  " All files
+  command! -nargs=? -complete=dir AF
+        \ call fzf#run(fzf#wrap(fzf#vim#with_preview({
+        \   'source': 'fd --type f --hidden --follow --exclude .git --no-ignore . '.expand(<q-args>)
+        \ })))
+
+  let g:fzf_colors =
+        \ { 'fg':         ['fg', 'Normal'],
+        \ 'bg':         ['bg', 'Normal'],
+        \ 'preview-bg': ['bg', 'NormalFloat'],
+        \ 'hl':         ['fg', 'Comment'],
+        \ 'fg+':        ['fg', 'CursorLine', 'CursorColumn', 'Normal'],
+        \ 'bg+':        ['bg', 'CursorLine', 'CursorColumn'],
+        \ 'hl+':        ['fg', 'Statement'],
+        \ 'info':       ['fg', 'PreProc'],
+        \ 'border':     ['fg', 'Ignore'],
+        \ 'prompt':     ['fg', 'Conditional'],
+        \ 'pointer':    ['fg', 'Exception'],
+        \ 'marker':     ['fg', 'Keyword'],
+        \ 'spinner':    ['fg', 'Label'],
+        \ 'header':     ['fg', 'Comment'] }
+
+  if exists('$TMUX')
+    let g:fzf_layout = { 'tmux': '-p95%,70%' }
+  else
+    let g:fzf_layout = { 'window': { 'width': 0.95, 'height': 0.7 } }
+  endif
+
+  command! -bar MoveBack if &buftype == 'nofile' && (winwidth(0) < &columns / 3 || winheight(0) < &lines / 3) | execute "normal! \<c-w>\<c-p>" | endif
+
+  imap <c-x><c-k> <plug>(fzf-complete-word)
+  imap <c-x><c-f> <plug>(fzf-complete-path)
+  inoremap <expr> <c-x><c-d> fzf#vim#complete#path('blsd')
+  imap <c-x><c-j> <plug>(fzf-complete-file-ag)
+  imap <c-x><c-l> <plug>(fzf-complete-line)
+
+  nnoremap <silent> <leader>ff :MoveBack<BAR>Files<CR>
+  nnoremap <silent> <leader>fb :MoveBack<BAR>Buffers<CR>
+  nnoremap <silent> <leader>fr :History<CR>
+  nnoremap <silent> <leader>s  :GFiles?<CR>
+  nnoremap <silent> <leader>c  :BCommits<CR>
+  nnoremap <silent> <leader>g  :Ag <C-R><C-W><CR>
+  xnoremap <silent> <leader>g  y:Ag <C-R>"<CR>
+  nnoremap <silent> <leader>t  :Ag<CR>
+  nnoremap <silent> <Leader>`  :Marks<CR>
 endif
 " }}}
