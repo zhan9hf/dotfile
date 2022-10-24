@@ -35,8 +35,8 @@ Plug 'kevinhwang91/nvim-bqf'
 Plug 'tpope/vim-fugitive'
 Plug 'mhinz/vim-rfc'
 Plug 'editorconfig/editorconfig-vim'
-" Plug 'neoclide/coc.nvim', {'branch': 'release'}
-Plug 'neoclide/coc.nvim', {'branch': 'master', 'do': 'yarn install --frozen-lockfile'}
+Plug 'neoclide/coc.nvim', {'branch': 'release'}
+" Plug 'neoclide/coc.nvim', {'branch': 'master', 'do': 'yarn install --frozen-lockfile'}
 " Plug 'github/copilot.vim'
 Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 Plug 'junegunn/fzf.vim'
@@ -220,6 +220,7 @@ if !empty(glob('~/.config/nvim/bundle/nvim-hlslens'))
   noremap # #<Cmd>lua require('hlslens').start()<CR>
   noremap g* g*<Cmd>lua require('hlslens').start()<CR>
   noremap g# g#<Cmd>lua require('hlslens').start()<CR>
+  lua require('hlslens').setup()
 endif
 
 if !empty(glob('~/.config/nvim/bundle/remember.nvim'))
@@ -328,13 +329,13 @@ if !empty(glob('~/.config/nvim/bundle/coc.nvim'))
       call add(loc_ranges, d.location.range)
       call add(items, item)
     endfor
-    call setqflist([], ' ', {'title': 'CocDiagnosticList', 'items': items, 'context': {'bqf': {'lsp_ranges_hl': loc_ranges}}})
+    call setqflist([], ' ', {'title': 'CocDiagnosticList', 'items': items, 'context': {'bqf': {'lsp_ranges_hl': loc_ranges}} })
     botright copen
   endfunction
 
   function! s:coc_qf_jump2loc(locs) abort
     let loc_ranges = map(deepcopy(a:locs), 'v:val.range')
-    call setloclist(0, [], ' ', {'title': 'CocLocationList', 'items': a:locs, 'context': {'bqf': {'lsp_ranges_hl': loc_ranges}}})
+    call setloclist(0, [], ' ', {'title': 'CocLocationList', 'items': a:locs, 'context': {'bqf': {'lsp_ranges_hl': loc_ranges}} })
     let winid = getloclist(0, {'winid': 0}).winid
     if winid == 0
       rightbelow lwindow
