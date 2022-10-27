@@ -22,6 +22,7 @@ Plug 'tpope/vim-surround'
 Plug 'numToStr/Comment.nvim'
 Plug 'sk1418/Join', { 'on': 'Join'}
 Plug 'ludovicchabant/vim-gutentags'
+Plug 'honza/vim-snippets'
 Plug 'windwp/nvim-autopairs'
 Plug 'brglng/vim-im-select'
 Plug 't9md/vim-choosewin'
