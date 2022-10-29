@@ -108,7 +108,7 @@ augroup common
   autocmd!
   autocmd BufNewFile,BufRead Dockerfile* set filetype=dockerfile
 
-  autocmd FileType lua,ruby,html,javascript,typescript,css,json,vue,vim,yaml,cpp,c setlocal shiftwidth=2 tabstop=2
+  autocmd FileType lua,ruby,html,javascript,typescript,css,json,vue,vim,yaml,cpp,c,cmake setlocal shiftwidth=2 tabstop=2
 
   autocmd FileType qf if mapcheck('<esc>', 'n') ==# '' | nnoremap <buffer><silent> <esc> :cclose<bar>lclose<CR> | endif
 
