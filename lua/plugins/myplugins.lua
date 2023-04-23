@@ -2,11 +2,11 @@ return {
   -- add gruvbox
   { "ellisonleao/gruvbox.nvim" },
 
-  -- Configure LazyVim to load gruvbox
+  -- Configure LazyVim to load colorscheme
   {
     "LazyVim/LazyVim",
     opts = {
-      colorscheme = "gruvbox",
+      colorscheme = "catppuccin",
     },
   },
 
@@ -62,13 +62,17 @@ return {
 
   {
     "neovim/nvim-lspconfig",
+    -- tag = "v0.1.6",
     ---@class PluginLspOpts
+    dependencies = {
+      "p00f/clangd_extensions.nvim",
+    },
     opts = {
       ---@type lspconfig.options
       servers = {
         bashls = {},
         beancount = {},
-        clangd = {},
+        clangd = { cmd = { "clangd", "--offset-encoding=utf-16" } },
         clojure_lsp = {},
         cssls = {},
         cssmodules_ls = {},
@@ -107,6 +111,12 @@ return {
         vimls = {},
         yamlls = {},
       },
+      setup = {
+        clangd = function(_, opts)
+          require("clangd_extensions").setup({ server = opts })
+          return true
+        end,
+      },
     },
   },
 
@@ -114,34 +124,29 @@ return {
   {
     "nvim-treesitter/nvim-treesitter",
     opts = {
-      ensure_installed = {
-        "bash",
-        "html",
-        "javascript",
-        "json",
-        "lua",
-        "markdown",
-        "markdown_inline",
-        "python",
-        "query",
-        "regex",
-        "tsx",
-        "typescript",
-        "vim",
-        "yaml",
-        "c",
-        "cpp",
-        "java",
-        "rust",
-      },
+      ensure_installed = "all",
+      -- ensure_installed = {
+      --   "bash",
+      --   "html",
+      --   "javascript",
+      --   "json",
+      --   "lua",
+      --   "markdown",
+      --   "markdown_inline",
+      --   "python",
+      --   "query",
+      --   "regex",
+      --   "tsx",
+      --   "typescript",
+      --   "vim",
+      --   "yaml",
+      --   "c",
+      --   "cpp",
+      --   "java",
+      --   "rust",
+      -- },
     },
   },
-
-  -- use mini.starter instead of alpha
-  { import = "lazyvim.plugins.extras.ui.mini-starter" },
-
-  -- add jsonls and schemastore ans setup treesitter for json, json5 and jsonc
-  { import = "lazyvim.plugins.extras.lang.json" },
 
   -- add any tools you want to have installed below
   {
@@ -158,6 +163,7 @@ return {
 
   {
     "nvim-neo-tree/neo-tree.nvim",
+    -- tag = "2.56",
     opts = function(_, opts)
       opts.close_if_last_window = true -- Close Neo-tree if it is the last window left in the tab
       opts.window = {
@@ -229,6 +235,7 @@ return {
       "SirVer/ultisnips",
       "quangnguyen30192/cmp-nvim-ultisnips",
       "honza/vim-snippets",
+      "paopaol/cmp-doxygen",
     },
     ---@param opts cmp.ConfigSchema
     opts = function(_, opts)
@@ -266,6 +273,7 @@ return {
         { name = "ultisnips" },
         { name = "buffer" },
         { name = "path" },
+        { name = "doxygen" },
       })
     end,
   },
