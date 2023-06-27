@@ -62,11 +62,9 @@ return {
 
   {
     "neovim/nvim-lspconfig",
-    -- tag = "v0.1.6",
-    ---@class PluginLspOpts
-    dependencies = {
-      "p00f/clangd_extensions.nvim",
-    },
+    -- dependencies = {
+    --   "p00f/clangd_extensions.nvim",
+    -- },
     opts = {
       ---@type lspconfig.options
       servers = {
@@ -112,10 +110,10 @@ return {
         yamlls = {},
       },
       setup = {
-        clangd = function(_, opts)
-          require("clangd_extensions").setup({ server = opts })
-          return true
-        end,
+        -- clangd = function(_, opts)
+        --   require("clangd_extensions").setup({ server = opts })
+        --   return true
+        -- end,
       },
     },
   },
@@ -125,26 +123,6 @@ return {
     "nvim-treesitter/nvim-treesitter",
     opts = {
       ensure_installed = "all",
-      -- ensure_installed = {
-      --   "bash",
-      --   "html",
-      --   "javascript",
-      --   "json",
-      --   "lua",
-      --   "markdown",
-      --   "markdown_inline",
-      --   "python",
-      --   "query",
-      --   "regex",
-      --   "tsx",
-      --   "typescript",
-      --   "vim",
-      --   "yaml",
-      --   "c",
-      --   "cpp",
-      --   "java",
-      --   "rust",
-      -- },
     },
   },
 
@@ -163,7 +141,6 @@ return {
 
   {
     "nvim-neo-tree/neo-tree.nvim",
-    -- tag = "2.56",
     opts = function(_, opts)
       opts.close_if_last_window = true -- Close Neo-tree if it is the last window left in the tab
       opts.window = {
@@ -181,17 +158,10 @@ return {
           ["h"] = "close_node",
           ["S"] = "open_split",
           ["s"] = "open_vsplit",
-          -- ["S"] = "split_with_window_picker",
-          -- ["s"] = "vsplit_with_window_picker",
           ["t"] = "open_tabnew",
-          -- ["<cr>"] = "open_drop",
-          -- ["t"] = "open_tab_drop",
           ["w"] = "open_with_window_picker",
-          --["P"] = "toggle_preview", -- enter preview mode, which shows the current node without focusing
           ["C"] = "close_node",
-          -- ['C'] = 'close_all_subnodes',
           ["z"] = "close_all_nodes",
-          --["Z"] = "expand_all_nodes",
           ["a"] = {
             "add",
             -- this command supports BASH style brace expansion ("x{a,b,c}" -> xa,xb,xc). see `:h neo-tree-file-actions` for details
@@ -213,7 +183,7 @@ return {
           --    show_path = "none" -- "none", "relative", "absolute"
           --  }
           --}
-          ["m"] = "move", -- takes text input for destination, also accepts the optional config.show_path option like "add".
+          ["m"] = { "move", config = { show_path = "absolute" } }, -- takes text input for destination, also accepts the optional config.show_path option like "add".
           ["q"] = "close_window",
           ["R"] = "refresh",
           ["?"] = "show_help",
@@ -223,6 +193,17 @@ return {
       }
     end,
   },
+  -- { "echasnovski/mini.comment", enalbed = false },
+  -- { "JoosepAlviste/nvim-ts-context-commentstring", enabled = false },
+
+  -- {
+  --   "numToStr/Comment.nvim",
+  --   event = "VeryLazy",
+  --   opts = {},
+  --   config = function(_, opts)
+  --     require("Comment").setup(opts)
+  --   end,
+  -- },
 
   { "L3MON4D3/LuaSnip", enabled = false },
   { "rafamadriz/friendly-snippets", enabled = false },
@@ -274,6 +255,7 @@ return {
         { name = "buffer" },
         { name = "path" },
         { name = "doxygen" },
+        { name = "copilot" },
       })
     end,
   },

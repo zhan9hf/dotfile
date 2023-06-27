@@ -3,3 +3,4 @@
 -- Add any additional keymaps here
 
 vim.keymap.set("i", "<S-Insert>", "<C-R>+", { desc = "Paste" })
+vim.keymap.set("n", "<S-Insert>", "<C-R>+", { desc = "Paste" })
