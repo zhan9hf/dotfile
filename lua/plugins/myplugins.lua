@@ -98,7 +98,7 @@ return {
 					},
 				},
 				marksman = {},
-				cmake = {},
+				neocmake = {},
 				-- powershell_es = {},
 				pylsp = {},
 				rust_analyzer = {},
@@ -146,6 +146,24 @@ return {
 
 	{
 		"nvim-neo-tree/neo-tree.nvim",
+		keys = {
+			{
+				"<leader>fe",
+				function()
+					require("neo-tree.command").execute({ toggle = true, dir = require("lazyvim.util").get_root() })
+				end,
+				desc = "Explorer NeoTree (root dir)",
+			},
+			{
+				"<leader>fE",
+				function()
+					require("neo-tree.command").execute({ toggle = true, dir = vim.loop.cwd() })
+				end,
+				desc = "Explorer NeoTree (cwd)",
+			},
+			{ "<leader>E", "<leader>fe", desc = "Explorer NeoTree (root dir)", remap = true },
+			{ "<leader>e", "<leader>fE", desc = "Explorer NeoTree (cwd)", remap = true },
+		},
 		opts = function(_, opts)
 			opts.close_if_last_window = true -- Close Neo-tree if it is the last window left in the tab
 			opts.window = {
@@ -210,29 +228,30 @@ return {
 		end,
 	},
 
-	{ "ggandor/flit.nvim", enabled = false },
-	{ "ggandor/leap.nvim", enabled = false },
-	{
-		"phaazon/hop.nvim",
-		branch = "v2",
-		config = function()
-			require("hop").setup()
-			local hop = require("hop")
-			local directions = require("hop.hint").HintDirection
-			vim.keymap.set("", "f", function()
-				hop.hint_char1({ direction = directions.AFTER_CURSOR, current_line_only = true })
-			end, { remap = true })
-			vim.keymap.set("", "F", function()
-				hop.hint_char1({ direction = directions.BEFORE_CURSOR, current_line_only = true })
-			end, { remap = true })
-			vim.keymap.set("", "t", function()
-				hop.hint_char1({ direction = directions.AFTER_CURSOR, current_line_only = true, hint_offset = -1 })
-			end, { remap = true })
-			vim.keymap.set("", "T", function()
-				hop.hint_char1({ direction = directions.BEFORE_CURSOR, current_line_only = true, hint_offset = 1 })
-			end, { remap = true })
-		end,
-	},
+	-- { "ggandor/flit.nvim", enabled = false },
+	-- { "ggandor/leap.nvim", enabled = false },
+	-- { "folke/flash.nvim", enabled = false },
+	-- {
+	-- 	"phaazon/hop.nvim",
+	-- 	branch = "v2",
+	-- 	config = function()
+	-- 		require("hop").setup()
+	-- 		local hop = require("hop")
+	-- 		local directions = require("hop.hint").HintDirection
+	-- 		vim.keymap.set("", "f", function()
+	-- 			hop.hint_char1({ direction = directions.AFTER_CURSOR, current_line_only = false })
+	-- 		end, { remap = true })
+	-- 		vim.keymap.set("", "F", function()
+	-- 			hop.hint_char1({ direction = directions.BEFORE_CURSOR, current_line_only = false })
+	-- 		end, { remap = true })
+	-- 		vim.keymap.set("", "t", function()
+	-- 			hop.hint_char1({ direction = directions.AFTER_CURSOR, current_line_only = false, hint_offset = -1 })
+	-- 		end, { remap = true })
+	-- 		vim.keymap.set("", "T", function()
+	-- 			hop.hint_char1({ direction = directions.BEFORE_CURSOR, current_line_only = false, hint_offset = 1 })
+	-- 		end, { remap = true })
+	-- 	end,
+	-- },
 
 	{ "L3MON4D3/LuaSnip", enabled = false },
 	{ "rafamadriz/friendly-snippets", enabled = false },
