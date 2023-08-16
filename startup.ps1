@@ -50,4 +50,6 @@ sudo cpanm -n Neovim::Ext
 
 sudo pip install --user --upgrade pynvim
 
+pip install cmakelang
+
 sudo gem install neovim
