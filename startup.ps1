@@ -40,6 +40,8 @@ choco install everything
 
 choco install msys2
 
+choco install sed
+
 choco install rustup.install
 
 oh-my-posh font install meslo # Meslo LGM NF
