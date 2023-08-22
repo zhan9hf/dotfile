@@ -1,12 +1,16 @@
 return {
-	-- add gruvbox
 	{ "morhetz/gruvbox" },
+	{ "junegunn/seoul256.vim" },
+	{ "jdsimcoe/abstract.vim" },
+	{ "joshdick/onedark.vim" },
 
-	-- Configure LazyVim to load colorscheme
+	-- 加载 colorscheme
 	{
 		"LazyVim/LazyVim",
 		opts = {
-			colorscheme = "gruvbox",
+			colorscheme = "onedark",
+			-- colorscheme = "catppuccin-mocha",
+			-- colorscheme = "catppuccin-frappe",
 		},
 	},
 
@@ -17,7 +21,13 @@ return {
 		opts = { use_diagnostic_signs = true },
 	},
 
-	-- add symbols-outline
+	{
+		"iamcco/markdown-preview.nvim",
+		build = function()
+			vim.fn["mkdp#util#install"]()
+		end,
+	},
+
 	{
 		"simrat39/symbols-outline.nvim",
 		cmd = "SymbolsOutline",
@@ -25,7 +35,6 @@ return {
 		config = true,
 	},
 
-	-- change some telescope options and a keymap to browse plugin files
 	{
 		"nvim-telescope/telescope.nvim",
 		keys = {
@@ -62,15 +71,16 @@ return {
 
 	{
 		"neovim/nvim-lspconfig",
-		dependencies = {
-			"p00f/clangd_extensions.nvim",
-		},
+		-- dependencies = {
+		-- 	"p00f/clangd_extensions.nvim",
+		-- },
 		opts = {
 			servers = {
 				bashls = {},
 				beancount = {},
 				clangd = { cmd = { "clangd", "--offset-encoding=utf-16" } },
 				clojure_lsp = {},
+				-- cmake = {},
 				cssls = {},
 				cssmodules_ls = {},
 				denols = {},
@@ -83,7 +93,7 @@ return {
 				jsonls = {},
 				kotlin_language_server = {},
 				lemminx = {},
-				ltex = {},
+				-- ltex = {},
 				lua_ls = {
 					-- mason = false, -- set to false if you don't want this server to be installed with mason
 					settings = {
@@ -109,10 +119,10 @@ return {
 				yamlls = {},
 			},
 			setup = {
-				clangd = function(_, opts)
-					require("clangd_extensions").setup({ server = opts })
-					return true
-				end,
+				-- clangd = function(_, opts)
+				-- 	require("clangd_extensions").setup({ server = opts })
+				-- 	return true
+				-- end,
 			},
 		},
 	},
@@ -228,9 +238,6 @@ return {
 		end,
 	},
 
-	-- { "ggandor/flit.nvim", enabled = false },
-	-- { "ggandor/leap.nvim", enabled = false },
-	-- { "folke/flash.nvim", enabled = false },
 	-- {
 	-- 	"phaazon/hop.nvim",
 	-- 	branch = "v2",
