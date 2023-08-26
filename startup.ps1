@@ -54,4 +54,6 @@ sudo pip install --user --upgrade pynvim
 
 pip install cmakelang
 
+sudo pip install conan==1.60.2
+
 sudo gem install neovim
