@@ -6,6 +6,8 @@ choco install git
 
 choco install visualstudio2017buildtools
 
+choco install googlechrome
+
 choco install neovim
 
 choco install cmake
