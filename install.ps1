@@ -58,4 +58,6 @@ pip install cmakelang
 
 sudo pip install conan==1.60.2
 
+pip3 install gersemi
+
 sudo gem install neovim
