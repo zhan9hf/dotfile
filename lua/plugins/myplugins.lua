@@ -8,9 +8,8 @@ return {
 	{
 		"LazyVim/LazyVim",
 		opts = {
-			colorscheme = "onedark",
-			-- colorscheme = "catppuccin-mocha",
-			-- colorscheme = "catppuccin-frappe",
+			-- colorscheme = "onedark",
+			colorscheme = "tokyonight",
 		},
 	},
 
@@ -57,99 +56,56 @@ return {
 		},
 	},
 
-	-- add telescope-fzf-native
-	-- {
-	-- 	"telescope.nvim",
-	-- 	dependencies = {
-	-- 		"nvim-telescope/telescope-fzf-native.nvim",
-	-- 		build = "make",
-	-- 		config = function()
-	-- 			require("telescope").load_extension("fzf")
-	-- 		end,
-	-- 	},
-	-- },
-
 	{
-		"neovim/nvim-lspconfig",
-		-- dependencies = {
-		-- 	"p00f/clangd_extensions.nvim",
-		-- },
-		opts = {
-			servers = {
-				bashls = {},
-				beancount = {},
-				clangd = { cmd = { "clangd", "--offset-encoding=utf-16" } },
-				clojure_lsp = {},
-				-- cmake = {},
-				cssls = {},
-				cssmodules_ls = {},
-				denols = {},
-				docker_compose_language_service = {},
-				dockerls = {},
-				-- golangci_lint_ls = {},
-				gradle_ls = {},
-				-- groovyls = {},
-				html = {},
-				jsonls = {},
-				kotlin_language_server = {},
-				lemminx = {},
-				-- ltex = {},
-				lua_ls = {
-					-- mason = false, -- set to false if you don't want this server to be installed with mason
-					settings = {
-						Lua = {
-							workspace = {
-								checkThirdParty = false,
-							},
-							completion = {
-								callSnippet = "Replace",
-							},
-						},
-					},
-				},
-				marksman = {},
-				neocmake = {},
-				-- powershell_es = {},
-				pylsp = {},
-				rust_analyzer = {},
-				sqlls = {},
-				taplo = {},
-				tsserver = {},
-				vimls = {},
-				yamlls = {},
-			},
-			setup = {
-				-- clangd = function(_, opts)
-				-- 	require("clangd_extensions").setup({ server = opts })
-				-- 	return true
-				-- end,
-			},
-		},
-	},
-
-	-- add more treesitter parsers
-	{
-		"nvim-treesitter/nvim-treesitter",
+		"nvimtools/none-ls.nvim",
 		opts = function(_, opts)
-			-- add tsx and treesitter
-			vim.list_extend(opts.ensure_installed, {
-				"cpp",
-				"java",
-				"go",
-				"typescript",
+			local nls = require("null-ls")
+			opts.default_timeout = -1
+			opts.sources = opts.sources or {}
+			vim.list_extend(opts.sources, {
+				nls.builtins.formatting.cmake_format.with({ timeout = -1 }),
 			})
 		end,
 	},
 
-	-- add any tools you want to have installed below
 	{
-		"williamboman/mason.nvim",
+		"echasnovski/mini.starter",
 		opts = {
-			ensure_installed = {
-				"stylua",
-				"shellcheck",
-				"shfmt",
-				"flake8",
+			header = table.concat({
+				"███████╗██╗  ██╗ █████╗ ███╗   ██╗ ██████╗ ██╗  ██╗███████╗",
+				"╚══███╔╝██║  ██║██╔══██╗████╗  ██║██╔════╝ ██║  ██║██╔════╝",
+				"  ███╔╝ ███████║███████║██╔██╗ ██║██║  ███╗███████║█████╗  ",
+				" ███╔╝  ██╔══██║██╔══██║██║╚██╗██║██║   ██║██╔══██║██╔══╝  ",
+				"███████╗██║  ██║██║  ██║██║ ╚████║╚██████╔╝██║  ██║██║     ",
+				"╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝ ╚═════╝ ╚═╝  ╚═╝╚═╝     ",
+			}, "\n"),
+		},
+	},
+
+	{
+		"neovim/nvim-lspconfig",
+		opts = {
+			servers = {
+				bashls = {},
+				beancount = {},
+				cssls = {},
+				cssmodules_ls = {},
+				denols = {},
+				gradle_ls = {},
+				html = {},
+				kotlin_language_server = {},
+				lemminx = {},
+				marksman = {},
+				neocmake = {
+					init_options = {
+						format = {
+							enable = false,
+						},
+					},
+				},
+				sqlls = {},
+				taplo = {},
+				vimls = {},
 			},
 		},
 	},
@@ -157,78 +113,25 @@ return {
 	{
 		"nvim-neo-tree/neo-tree.nvim",
 		keys = {
-			{
-				"<leader>fe",
-				function()
-					require("neo-tree.command").execute({ toggle = true, dir = require("lazyvim.util").get_root() })
-				end,
-				desc = "Explorer NeoTree (root dir)",
-			},
-			{
-				"<leader>fE",
-				function()
-					require("neo-tree.command").execute({ toggle = true, dir = vim.loop.cwd() })
-				end,
-				desc = "Explorer NeoTree (cwd)",
-			},
-			{ "<leader>E", "<leader>fe", desc = "Explorer NeoTree (root dir)", remap = true },
-			{ "<leader>e", "<leader>fE", desc = "Explorer NeoTree (cwd)", remap = true },
+			{ "<leader>e", "<leader>fe", desc = "Explorer NeoTree (root dir)", remap = true },
+			{ "<leader>E", "<leader>fE", desc = "Explorer NeoTree (cwd)", remap = true },
 		},
 		opts = function(_, opts)
 			opts.close_if_last_window = true -- Close Neo-tree if it is the last window left in the tab
+			-- opts.enable_git_status = false
 			opts.window = {
 				width = 32,
 				mappings = {
-					["<space>"] = {
-						"toggle_node",
-						nowait = false, -- disable `nowait` if you have existing combos starting with this char that you want to use
-					},
-					["<2-LeftMouse>"] = "open",
-					["<cr>"] = "open",
-					["<esc>"] = "revert_preview",
-					["P"] = { "toggle_preview", config = { use_float = true } },
 					["l"] = "open",
 					["h"] = "close_node",
-					["S"] = "open_split",
-					["s"] = "open_vsplit",
-					["t"] = "open_tabnew",
-					["w"] = "open_with_window_picker",
-					["C"] = "close_node",
-					["z"] = "close_all_nodes",
-					["a"] = {
-						"add",
-						-- this command supports BASH style brace expansion ("x{a,b,c}" -> xa,xb,xc). see `:h neo-tree-file-actions` for details
-						-- some commands may take optional config options, see `:h neo-tree-mappings` for details
-						config = {
-							show_path = "none", -- "none", "relative", "absolute"
-						},
-					},
-					["A"] = "add_directory", -- also accepts the optional config.show_path option like "add". this also supports BASH style brace expansion.
-					["d"] = "delete",
-					["r"] = "rename",
-					["y"] = "copy_to_clipboard",
-					["x"] = "cut_to_clipboard",
-					["p"] = "paste_from_clipboard",
-					["c"] = "copy", -- takes text input for destination, also accepts the optional config.show_path option like "add":
-					-- ["c"] = {
-					--  "copy",
-					--  config = {
-					--    show_path = "none" -- "none", "relative", "absolute"
-					--  }
-					--}
 					["m"] = { "move", config = { show_path = "absolute" } }, -- takes text input for destination, also accepts the optional config.show_path option like "add".
-					["q"] = "close_window",
-					["R"] = "refresh",
-					["?"] = "show_help",
-					["<"] = "prev_source",
-					[">"] = "next_source",
 				},
 			}
 		end,
 	},
+
 	{ "JoosepAlviste/nvim-ts-context-commentstring", enabled = false },
 	{ "echasnovski/mini.comment", enabled = false },
-
 	{
 		"numToStr/Comment.nvim",
 		event = "VeryLazy",
@@ -237,28 +140,6 @@ return {
 			require("Comment").setup(opts)
 		end,
 	},
-
-	-- {
-	-- 	"phaazon/hop.nvim",
-	-- 	branch = "v2",
-	-- 	config = function()
-	-- 		require("hop").setup()
-	-- 		local hop = require("hop")
-	-- 		local directions = require("hop.hint").HintDirection
-	-- 		vim.keymap.set("", "f", function()
-	-- 			hop.hint_char1({ direction = directions.AFTER_CURSOR, current_line_only = false })
-	-- 		end, { remap = true })
-	-- 		vim.keymap.set("", "F", function()
-	-- 			hop.hint_char1({ direction = directions.BEFORE_CURSOR, current_line_only = false })
-	-- 		end, { remap = true })
-	-- 		vim.keymap.set("", "t", function()
-	-- 			hop.hint_char1({ direction = directions.AFTER_CURSOR, current_line_only = false, hint_offset = -1 })
-	-- 		end, { remap = true })
-	-- 		vim.keymap.set("", "T", function()
-	-- 			hop.hint_char1({ direction = directions.BEFORE_CURSOR, current_line_only = false, hint_offset = 1 })
-	-- 		end, { remap = true })
-	-- 	end,
-	-- },
 
 	{ "L3MON4D3/LuaSnip", enabled = false },
 	{ "rafamadriz/friendly-snippets", enabled = false },
@@ -303,15 +184,11 @@ return {
 				end, { "i", "s" }),
 			})
 
-			opts.sources = cmp.config.sources({
+			opts.sources = cmp.config.sources(vim.list_extend(opts.sources, {
 				{ name = "cmp-emoji" },
-				{ name = "nvim_lsp" },
 				{ name = "ultisnips" },
-				{ name = "buffer" },
-				{ name = "path" },
 				{ name = "doxygen" },
-				{ name = "copilot" },
-			})
+			}))
 		end,
 	},
 }

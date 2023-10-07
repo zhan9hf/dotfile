@@ -13,12 +13,24 @@ require("lazy").setup({
 		-- import any extras modules here
 		-- { import = "lazyvim.plugins.extras.lang.typescript" },
 		{ import = "lazyvim.plugins.extras.coding.copilot" },
+		{ import = "lazyvim.plugins.extras.coding.yanky" },
 		{ import = "lazyvim.plugins.extras.dap.core" },
+		-- { import = "lazyvim.plugins.extras.editor.leap" },
+		{ import = "lazyvim.plugins.extras.lang.clangd" },
+		{ import = "lazyvim.plugins.extras.lang.cmake" },
+		{ import = "lazyvim.plugins.extras.lang.docker" },
+		{ import = "lazyvim.plugins.extras.lang.go" },
+		{ import = "lazyvim.plugins.extras.lang.java" },
 		{ import = "lazyvim.plugins.extras.lang.json" },
+		{ import = "lazyvim.plugins.extras.lang.python-semshi" },
+		{ import = "lazyvim.plugins.extras.lang.python" },
+		{ import = "lazyvim.plugins.extras.lang.ruby" },
+		{ import = "lazyvim.plugins.extras.lang.rust" },
+		{ import = "lazyvim.plugins.extras.lang.typescript" },
+		{ import = "lazyvim.plugins.extras.lang.yaml" },
+		{ import = "lazyvim.plugins.extras.linting.nvim-lint" },
 		-- { import = "lazyvim.plugins.extras.ui.mini-animate" },
 		{ import = "lazyvim.plugins.extras.ui.mini-starter" },
-		{ import = "lazyvim.plugins.extras.coding.yanky" },
-		{ import = "lazyvim.plugins.extras.editor.leap" },
 		-- import/override with your plugins
 		{ import = "plugins" },
 	},
@@ -31,7 +43,7 @@ require("lazy").setup({
 		version = false, -- always use the latest git commit
 		-- version = "*", -- try installing the latest stable version for plugins that support semver
 	},
-	concurrency = 4, -- max number of plugins to install/update in parallel
+	concurrency = 20, -- max number of plugins to install/update in parallel
 	install = { colorscheme = { "tokyonight", "habamax" } },
 	checker = { enabled = false }, -- automatically check for plugin updates
 	performance = {
