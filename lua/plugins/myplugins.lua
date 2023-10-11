@@ -13,6 +13,24 @@ return {
 		},
 	},
 
+	{
+		"NeogitOrg/neogit",
+		dependencies = {
+			"nvim-lua/plenary.nvim", -- required
+			"nvim-telescope/telescope.nvim", -- optional
+			"sindrets/diffview.nvim", -- optional
+		},
+		config = true,
+		keys = {
+			{
+				"<leader>gg",
+				"<cmd>Neogit cwd=%:p:h<cr>",
+				desc = "Neogit root",
+			},
+			{ "<leader>gG", "<cmd>Neogit<cr>", desc = "Neogit current" },
+		},
+	},
+
 	-- change trouble config
 	{
 		"folke/trouble.nvim",
@@ -25,6 +43,15 @@ return {
 		build = function()
 			vim.fn["mkdp#util#install"]()
 		end,
+	},
+
+	{
+		"vimwiki/vimwiki",
+		keys = { {
+			"<leader>ww",
+			"<cmd>VimwikiIndex<cr>",
+			desc = "Vimwiki Index",
+		} },
 	},
 
 	{
@@ -120,7 +147,7 @@ return {
 			opts.close_if_last_window = true -- Close Neo-tree if it is the last window left in the tab
 			-- opts.enable_git_status = false
 			opts.window = {
-				width = 32,
+				width = 25,
 				mappings = {
 					["l"] = "open",
 					["h"] = "close_node",
