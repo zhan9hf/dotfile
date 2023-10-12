@@ -47,6 +47,22 @@ return {
 
 	{
 		"vimwiki/vimwiki",
+		init = function()
+			vim.g.vimwiki_list = {
+				{
+					path = "~/vimwiki/",
+					syntax = "markdown",
+					ext = ".md",
+					index = "index",
+					path_html = "~/vimwiki_html/",
+					template_path = "~/vimwiki/templates/",
+					template_default = "default",
+					template_ext = ".md",
+					table_mappings = 0,
+				},
+			}
+			vim.g.vimwiki_global_ext = 0
+		end,
 		keys = { {
 			"<leader>ww",
 			"<cmd>VimwikiIndex<cr>",
