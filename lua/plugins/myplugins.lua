@@ -9,7 +9,9 @@ return {
     "LazyVim/LazyVim",
     opts = {
       -- colorscheme = "onedark",
-      colorscheme = "tokyonight",
+      -- colorscheme = "tokyonight",
+      colorscheme = "catppuccin",
+      -- catppuccin-latte, catppuccin-frappe, catppuccin-macchiato, catppuccin-mocha
     },
   },
 
@@ -30,19 +32,20 @@ return {
       { "<leader>gG", "<cmd>Neogit<cr>", desc = "Neogit current" },
     },
   },
-
+  {
+    "s1n7ax/nvim-window-picker",
+    name = "window-picker",
+    event = "VeryLazy",
+    version = "2.*",
+    config = function()
+      require("window-picker").setup()
+    end,
+  },
   -- change trouble config
   {
     "folke/trouble.nvim",
     -- opts will be merged with the parent spec
     opts = { use_diagnostic_signs = true },
-  },
-
-  {
-    "iamcco/markdown-preview.nvim",
-    build = function()
-      vim.fn["mkdp#util#install"]()
-    end,
   },
 
   {
@@ -99,9 +102,9 @@ return {
         lua = { "stylua" },
         cmake = { "cmake_format" },
       },
-      format_on_save = {
-        timeout_ms = 2000,
-      },
+      -- format_on_save = {
+      --   timeout_ms = 2000,
+      -- },
     },
   },
 
@@ -119,19 +122,55 @@ return {
   --   },
   -- },
 
+  -- {
+  --   "nvimdev/dashboard-nvim",
+  --   opts = function(_, opts)
+  --     local logo = [[
+  -- ███████╗██╗  ██╗ █████╗ ███╗   ██╗ ██████╗ ██╗  ██╗███████╗
+  -- ╚══███╔╝██║  ██║██╔══██╗████╗  ██║██╔════╝ ██║  ██║██╔════╝
+  --   ███╔╝ ███████║███████║██╔██╗ ██║██║  ███╗███████║█████╗
+  --  ███╔╝  ██╔══██║██╔══██║██║╚██╗██║██║   ██║██╔══██║██╔══╝
+  -- ███████╗██║  ██║██║  ██║██║ ╚████║╚██████╔╝██║  ██║██║
+  -- ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝ ╚═════╝ ╚═╝  ╚═╝╚═╝
+  -- ]]
+  --     logo = string.rep("\n", 6) .. logo .. "\n\n"
+  --     opts.config.header = vim.split(logo, "\n")
+  --   end,
+  -- },
   {
-    "glepnir/dashboard-nvim",
-    opts = function(_, opts)
-      local logo = [[
-  ███████╗██╗  ██╗ █████╗ ███╗   ██╗ ██████╗ ██╗  ██╗███████╗
-  ╚══███╔╝██║  ██║██╔══██╗████╗  ██║██╔════╝ ██║  ██║██╔════╝
-    ███╔╝ ███████║███████║██╔██╗ ██║██║  ███╗███████║█████╗  
-   ███╔╝  ██╔══██║██╔══██║██║╚██╗██║██║   ██║██╔══██║██╔══╝  
-  ███████╗██║  ██║██║  ██║██║ ╚████║╚██████╔╝██║  ██║██║     
-  ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝ ╚═════╝ ╚═╝  ╚═╝╚═╝     
-  ]]
-      logo = string.rep("\n", 8) .. logo .. "\n\n"
-      opts.config.header = vim.split(logo, "\n")
+    "nvimdev/dashboard-nvim",
+    event = "VimEnter",
+    opts = function()
+      local opts = {
+        theme = "hyper",
+        shortcut_type = "number",
+        change_to_vcs_root = true,
+        hide = { statusline = false },
+        config = {
+          week_header = { enable = true },
+          shortcut = {
+            { desc = "󰒲 Lazy", action = "Lazy", key = "l" },
+            { desc = " New file", action = "ene | startinsert", key = "n" },
+            { desc = " Session", action = 'lua require("persistence").load()', key = "s" },
+            { desc = " Files", action = "Telescope find_files", key = "f" },
+            { desc = " Quit", action = "qa", key = "q" },
+          },
+          project = { enable = false, limit = 8, icon = " ", action = "Telescope projects" },
+        },
+      }
+
+      -- close Lazy and re-open when the dashboard is ready
+      if vim.o.filetype == "lazy" then
+        vim.cmd.close()
+        vim.api.nvim_create_autocmd("User", {
+          pattern = "DashboardLoaded",
+          callback = function()
+            require("lazy").show()
+          end,
+        })
+      end
+
+      return opts
     end,
   },
 
@@ -148,7 +187,6 @@ return {
         html = {},
         kotlin_language_server = {},
         lemminx = {},
-        marksman = {},
         neocmake = {
           init_options = {
             format = {
@@ -165,15 +203,11 @@ return {
 
   {
     "nvim-neo-tree/neo-tree.nvim",
-    keys = {
-      { "<leader>e", "<leader>fe", desc = "Explorer NeoTree (root dir)", remap = true },
-      { "<leader>E", "<leader>fE", desc = "Explorer NeoTree (cwd)", remap = true },
-    },
     opts = function(_, opts)
-      opts.close_if_last_window = true -- Close Neo-tree if it is the last window left in the tab
+      -- opts.close_if_last_window = true -- Close Neo-tree if it is the last window left in the tab
       -- opts.enable_git_status = false
       opts.window = {
-        width = 25,
+        width = 28,
         mappings = {
           ["l"] = "open",
           ["h"] = "close_node",
