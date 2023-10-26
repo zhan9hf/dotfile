@@ -1,7 +1,6 @@
 return {
   { "morhetz/gruvbox" },
   { "junegunn/seoul256.vim" },
-  { "jdsimcoe/abstract.vim" },
   { "joshdick/onedark.vim" },
 
   -- 加载 colorscheme
@@ -32,6 +31,7 @@ return {
       { "<leader>gG", "<cmd>Neogit<cr>", desc = "Neogit current" },
     },
   },
+
   {
     "s1n7ax/nvim-window-picker",
     name = "window-picker",
@@ -41,37 +41,37 @@ return {
       require("window-picker").setup()
     end,
   },
-  -- change trouble config
+
   {
     "folke/trouble.nvim",
     -- opts will be merged with the parent spec
     opts = { use_diagnostic_signs = true },
   },
 
-  {
-    "vimwiki/vimwiki",
-    init = function()
-      vim.g.vimwiki_list = {
-        {
-          path = "~/vimwiki/",
-          syntax = "markdown",
-          ext = ".md",
-          index = "index",
-          path_html = "~/vimwiki_html/",
-          template_path = "~/vimwiki/templates/",
-          template_default = "default",
-          template_ext = ".md",
-          table_mappings = 0,
-        },
-      }
-      vim.g.vimwiki_global_ext = 0
-    end,
-    keys = { {
-      "<leader>ww",
-      "<cmd>VimwikiIndex<cr>",
-      desc = "Vimwiki Index",
-    } },
-  },
+  -- {
+  --   "vimwiki/vimwiki",
+  --   init = function()
+  --     vim.g.vimwiki_list = {
+  --       {
+  --         path = "~/vimwiki/",
+  --         syntax = "markdown",
+  --         ext = ".md",
+  --         index = "index",
+  --         path_html = "~/vimwiki_html/",
+  --         template_path = "~/vimwiki/templates/",
+  --         template_default = "default",
+  --         template_ext = ".md",
+  --         table_mappings = 0,
+  --       },
+  --     }
+  --     vim.g.vimwiki_global_ext = 0
+  --   end,
+  --   keys = { {
+  --     "<leader>ww",
+  --     "<cmd>VimwikiIndex<cr>",
+  --     desc = "Vimwiki Index",
+  --   } },
+  -- },
 
   {
     "nvim-telescope/telescope.nvim",
