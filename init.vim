@@ -62,6 +62,7 @@ set mouse=a
 set mousehide
 set helplang=cn
 set termguicolors
+set signcolumn=yes
 
 set shiftwidth=4
 set expandtab
@@ -75,6 +76,8 @@ set tags=.tags,./.tags
 set clipboard=unnamed
 set clipboard+=unnamedplus
 set hidden
+set nobackup
+set nowritebackup
 
 set ignorecase
 set smartcase
@@ -104,15 +107,6 @@ augroup common
   autocmd FileType json,vim,yaml,cpp,c,cmake setlocal shiftwidth=2 tabstop=2
   autocmd FileType qf if mapcheck('<esc>', 'n') ==# '' | nnoremap <buffer><silent> <esc> :cclose<bar>lclose<CR> | endif
   autocmd BufReadPost *.log normal! G
-  autocmd QuickFixCmdPost cgetexpr cwindow
-  autocmd QuickFixCmdPost lgetexpr lwindow
-
-  " set up default omnifunc
-  autocmd FileType *
-        \ if &omnifunc == "" |
-        \    setlocal omnifunc=syntaxcomplete#Complete |
-        \ endif
-augroup end
 " }}}
 
 " command {{{{
@@ -125,10 +119,7 @@ command! -nargs=0 Wa    wa
 command! -nargs=0 Wqa   wqa
 command! -nargs=0 WQa   wqa
 
-command! -nargs=0 FixWhitespace lua MiniTrailspace.trim()
-
 command! -nargs=0 JSONPretty    %!python3 -m json.tool
-command! -nargs=0 Todos         CocList -A --normal grep -w TODO|FIXME|FIX|FIXIT|BUG|HACK|XXX
 command! -nargs=0 VSCode        silent! execute ":!code -g %:p\:" . line('.') . ":" . col('.')
 command! -nargs=0 BOnly         silent! execute "%bd\|e#\|bd#"
 " }}}} command
@@ -145,10 +136,9 @@ nnoremap <C-j> <C-w>j
 xnoremap < <gv
 xnoremap > >gv
 map! <S-Insert> <C-R>+
-map <silent> <leader>ee :e $HOME/AppData/Local/nvim/init.vim<CR>
+map <silent> <leader>ee :e ~/AppData/Local/nvim/init.vim<CR>
 map ? /\<\><Left><Left>
 vnoremap // y/\V<C-R>=escape(@",'/\')<CR><CR>
-inoremap <silent><expr> <C-e> coc#pum#visible() ? coc#pum#cancel() : "\<End>"
 " }}}} mappings
 
 " plugins {{{
@@ -196,17 +186,7 @@ if !empty(glob(s:bundle_location . '/vim-startify'))
 endif
 
 if !empty(glob(s:bundle_location . '/nvim-colorizer.lua'))
-lua <<EOF
-  require'colorizer'.setup({ "*" }, {
-    RGB = true, -- #RGB hex codes
-    RRGGBB = true, -- #RRGGBB hex codes
-    RRGGBBAA = true, -- #RRGGBBAA hex codes
-    rgb_fn = true, -- CSS rgb() and rgba() functions
-    hsl_fn = true, -- CSS hsl() and hsla() functions
-    css = true, -- Enable all CSS features: rgb_fn, hsl_fn, names, RGB, RRGGBB
-    css_fn = true, -- Enable all CSS *functions*: rgb_fn, hsl_fn
-  })
-EOF
+  lua require'colorizer'.setup()
 endif
 
 if !empty(glob(s:bundle_location . '/Comment.nvim'))
@@ -378,18 +358,19 @@ if !empty(glob(s:bundle_location . '/coc.nvim'))
         \'coc-clang-format-style-options',
         \'coc-clangd',
         \'coc-cmake',
-        \'coc-copilot',
-        \'coc-css',
         \'coc-diagnostic',
         \'coc-dictionary',
         \'coc-docker',
+        \'coc-emoji',
         \'coc-explorer',
         \'coc-git',
+        \'coc-gitignore',
         \'coc-go',
         \'coc-highlight',
         \'coc-html',
         \'coc-java',
         \'coc-json',
+        \'coc-lines',
         \'coc-lists',
         \'coc-lua',
         \'coc-markdownlint',
@@ -409,7 +390,6 @@ if !empty(glob(s:bundle_location . '/coc.nvim'))
         \'coc-toml',
         \'coc-tsserver',
         \'coc-typos',
-        \'coc-vetur',
         \'coc-vimlsp',
         \'coc-word',
         \'coc-xml',
@@ -434,6 +414,7 @@ if !empty(glob(s:bundle_location . '/coc.nvim'))
         \: "\<C-g>u\<CR>\<c-r>=coc#on_enter()\<CR>"
   inoremap <silent><expr> <c-space> coc#refresh()
   inoremap <silent><expr> <backspace> coc#pum#visible() ? "\<bs>\<c-r>=coc#start()\<CR>" : "\<bs>"
+  inoremap <silent><expr> <c-e> coc#pum#visible() ? coc#pum#cancel() : "\<End>"
 
   nmap <silent> [d <Plug>(coc-diagnostic-prev)
   nmap <silent> ]d <Plug>(coc-diagnostic-next)
@@ -515,5 +496,6 @@ if !empty(glob(s:bundle_location . '/coc.nvim'))
 
   " Add `:Fold` command to fold current buffer.
   command! -nargs=? Fold :call CocAction('fold', <f-args>)
+  command! -nargs=0 Todos CocList -A --normal grep -w TODO|FIXME|FIX|FIXIT|BUG|HACK|XXX
 endif
 " }}}
