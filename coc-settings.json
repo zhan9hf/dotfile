@@ -14,6 +14,31 @@
   "diagnostic.hintSign": "󰌶 ",
   "explorer.file.reveal.auto": true,
   "explorer.icon.enableNerdfont": true,
+  "explorer.root.customRules": {
+    "vcs": {
+      "patterns": [
+        ".git",
+        ".hg",
+        ".projections.json"
+      ]
+    },
+    "vcs-r": {
+      "patterns": [
+        ".git",
+        ".hg",
+        ".projections.json"
+      ],
+      "bottomUp": true
+    }
+  },
+  "explorer.root.strategies": [
+    "custom:vcs",
+    "custom:vcs-r",
+    "workspace",
+    "cwd",
+    "sourceBuffer",
+    "reveal"
+  ],
   "explorer.icon.source": "nvim-web-devicons",
   "explorer.width": 30,
   "list.source.grep.useLiteral": false,
