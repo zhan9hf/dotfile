@@ -2,6 +2,7 @@
 let s:bundle_location = '~/AppData/Local/nvim/bundle'
 silent! if plug#begin(s:bundle_location)
 Plug 'catppuccin/nvim', { 'as': 'catppuccin' }
+Plug 'morhetz/gruvbox'
 Plug 'tpope/vim-sleuth'
 Plug 'folke/which-key.nvim'
 Plug 'nvim-tree/nvim-web-devicons'
@@ -27,6 +28,8 @@ Plug 'vim-scripts/DoxygenToolkit.vim'
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
 Plug 'github/copilot.vim'
 Plug 'honza/vim-snippets'
+" Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
+" Plug 'junegunn/fzf.vim'
 call plug#end()
 endif
 " }}}
@@ -41,7 +44,7 @@ set fileformats=unix,mac,dos
 set fileencodings=ucs-bom,utf-8,cp936,gb18030,big5,euc-jp,euc-kr,latin1
 
 set termguicolors
-colorscheme catppuccin
+colorscheme gruvbox
 
 set number
 set relativenumber
@@ -136,7 +139,7 @@ nnoremap <C-j> <C-w>j
 xnoremap < <gv
 xnoremap > >gv
 map! <S-Insert> <C-R>+
-map <silent> <leader>ee :e ~/AppData/Local/nvim/init.vim<CR>
+map <silent> <leader>i :e ~/AppData/Local/nvim/init.vim<CR>
 map ? /\<\><Left><Left>
 vnoremap // y/\V<C-R>=escape(@",'/\')<CR><CR>
 " }}}} mappings
@@ -376,7 +379,6 @@ if !empty(glob(s:bundle_location . '/coc.nvim'))
         \'coc-markdownlint',
         \'coc-marketplace',
         \'coc-mocword',
-        \'coc-nav',
         \'coc-pairs',
         \'coc-powershell',
         \'coc-pyright',
@@ -386,6 +388,7 @@ if !empty(glob(s:bundle_location . '/coc.nvim'))
         \'coc-sql',
         \'coc-sqlfluff',
         \'coc-swagger',
+        \'coc-symbol-line',
         \'coc-tag',
         \'coc-toml',
         \'coc-tsserver',
@@ -418,8 +421,8 @@ if !empty(glob(s:bundle_location . '/coc.nvim'))
 
   nmap <silent> [d <Plug>(coc-diagnostic-prev)
   nmap <silent> ]d <Plug>(coc-diagnostic-next)
-  nmap <silent> [g <Plug>(coc-git-prevchunk)
-  nmap <silent> ]g <Plug>(coc-git-nextchunk)
+  nmap <silent> [h <Plug>(coc-git-prevchunk)
+  nmap <silent> ]h <Plug>(coc-git-nextchunk)
   nmap <silent> [c <Plug>(coc-git-prevconflict)
   nmap <silent> ]c <Plug>(coc-git-nextconflict)
   nmap <silent> ]s <Plug>(coc-typos-next)
@@ -460,8 +463,8 @@ if !empty(glob(s:bundle_location . '/coc.nvim'))
 
   " Use CTRL-S for selections ranges
   " Requires 'textDocument/selectionRange' support of language server
-  " nmap <silent> <C-s> <Plug>(coc-range-select)
-  " xmap <silent> <C-s> <Plug>(coc-range-select)
+  nmap <silent> <C-s> <Plug>(coc-range-select)
+  xmap <silent> <C-s> <Plug>(coc-range-select)
 
   nmap <leader>ff :CocList files<CR>
   nmap <leader>fb :CocList buffers<CR>
@@ -497,5 +500,67 @@ if !empty(glob(s:bundle_location . '/coc.nvim'))
   " Add `:Fold` command to fold current buffer.
   command! -nargs=? Fold :call CocAction('fold', <f-args>)
   command! -nargs=0 Todos CocList -A --normal grep -w TODO|FIXME|FIX|FIXIT|BUG|HACK|XXX
+
+lua << EOF
+function _G.symbol_line()
+  local curwin = vim.g.statusline_winid or 0
+  local curbuf = vim.api.nvim_win_get_buf(curwin)
+  local ok, line = pcall(vim.api.nvim_buf_get_var, curbuf, 'coc_symbol_line')
+  return ok and line or ' ⋮'
+end
+
+vim.o.winbar = '%!v:lua.symbol_line()'
+EOF
+
+endif
+
+if !empty(glob(s:bundle_location . '/fzf.vim'))
+  let $FZF_DEFAULT_OPTS .= ' --inline-info'
+
+  " All files
+  command! -nargs=? -complete=dir AF
+        \ call fzf#run(fzf#wrap(fzf#vim#with_preview({
+        \   'source': 'fd --type f --hidden --follow --exclude .git --no-ignore . '.expand(<q-args>)
+        \ })))
+
+  let g:fzf_colors =
+        \ { 'fg':         ['fg', 'Normal'],
+        \ 'bg':         ['bg', 'Normal'],
+        \ 'preview-bg': ['bg', 'NormalFloat'],
+        \ 'hl':         ['fg', 'Comment'],
+        \ 'fg+':        ['fg', 'CursorLine', 'CursorColumn', 'Normal'],
+        \ 'bg+':        ['bg', 'CursorLine', 'CursorColumn'],
+        \ 'hl+':        ['fg', 'Statement'],
+        \ 'info':       ['fg', 'PreProc'],
+        \ 'border':     ['fg', 'Ignore'],
+        \ 'prompt':     ['fg', 'Conditional'],
+        \ 'pointer':    ['fg', 'Exception'],
+        \ 'marker':     ['fg', 'Keyword'],
+        \ 'spinner':    ['fg', 'Label'],
+        \ 'header':     ['fg', 'Comment'] }
+
+  if exists('$TMUX')
+    let g:fzf_layout = { 'tmux': '-p95%,70%' }
+  else
+    let g:fzf_layout = { 'window': { 'width': 0.95, 'height': 0.7 } }
+  endif
+
+  command! -bar MoveBack if &buftype == 'nofile' && (winwidth(0) < &columns / 3 || winheight(0) < &lines / 3) | execute "normal! \<c-w>\<c-p>" | endif
+
+  imap <c-x><c-k> <plug>(fzf-complete-word)
+  imap <c-x><c-f> <plug>(fzf-complete-path)
+  inoremap <expr> <c-x><c-d> fzf#vim#complete#path('blsd')
+  imap <c-x><c-j> <plug>(fzf-complete-file-ag)
+  imap <c-x><c-l> <plug>(fzf-complete-line)
+
+  nnoremap <silent> <leader>ff :MoveBack<BAR>Files<CR>
+  nnoremap <silent> <leader>fb :MoveBack<BAR>Buffers<CR>
+  nnoremap <silent> <leader>fr :History<CR>
+  nnoremap <silent> <leader>s  :GFiles?<CR>
+  nnoremap <silent> <leader>c  :BCommits<CR>
+  nnoremap <silent> <leader>g  :Rg <C-R><C-W><CR>
+  xnoremap <silent> <leader>g  y:Rg <C-R>"<CR>
+  nnoremap <silent> <leader>t  :Rg<CR>
+  nnoremap <silent> <Leader>`  :Marks<CR>
 endif
 " }}}
