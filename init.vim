@@ -1,6 +1,6 @@
+let s:bundle_location = stdpath('data') . '/plugged'
 " plug.vim {{{
-let s:bundle_location = '~/AppData/Local/nvim/bundle'
-silent! if plug#begin(s:bundle_location)
+silent! if plug#begin()
 Plug 'catppuccin/nvim', { 'as': 'catppuccin' }
 Plug 'morhetz/gruvbox'
 Plug 'tpope/vim-sleuth'
@@ -246,6 +246,7 @@ if !empty(glob(s:bundle_location . '/DoxygenToolkit.vim'))
 endif
 
 if !empty(glob(s:bundle_location . '/nvim-hlslens'))
+  lua require('hlslens').setup()
   noremap <silent> n <Cmd>execute('normal! ' . v:count1 . 'n')<CR>
         \<Cmd>lua require('hlslens').start()<CR>
   noremap <silent> N <Cmd>execute('normal! ' . v:count1 . 'N')<CR>
@@ -254,7 +255,6 @@ if !empty(glob(s:bundle_location . '/nvim-hlslens'))
   noremap # #<Cmd>lua require('hlslens').start()<CR>
   noremap g* g*<Cmd>lua require('hlslens').start()<CR>
   noremap g# g#<Cmd>lua require('hlslens').start()<CR>
-  lua require('hlslens').setup()
 endif
 
 if !empty(glob(s:bundle_location . '/remember.nvim'))
@@ -263,12 +263,12 @@ endif
 
 if !empty(glob(s:bundle_location . '/nvim-treesitter'))
 lua <<EOF
-  require 'nvim-treesitter.install'.compilers = { "clang" }
   require 'nvim-treesitter.configs'.setup {
     ensure_installed = "all",
     sync_install = false,
-    ignore_install = { "phpdoc","astro","fortran","qmldir" },
+    -- ignore_install = { "phpdoc","astro","fortran","qmldir" },
     highlight = { enable = true },
+    indent = { enable = true },
     incremental_selection = {
       enable = true,
       keymaps = {
@@ -277,7 +277,6 @@ lua <<EOF
         node_decremental = "<S-Tab>", -- visual mode
       },
     },
-    indent = { enable = true },
     -- extensions
     matchup = { enable = true },
   }
@@ -326,22 +325,22 @@ if !empty(glob(s:bundle_location . '/coc.nvim'))
     execute 'CocList grep '.word
   endfunction
 
-  function! s:coc_qf_diagnostic() abort
-    if !get(g:, 'coc_service_initialized', 0)
-      return
-    endif
-    let diagnostic_list = CocAction('diagnosticList')
-    let items = []
-    let loc_ranges = []
-    for d in diagnostic_list
-      let text = printf('[%s%s] %s', (empty(d.source) ? 'coc.nvim' : d.source), (d.code ? ' ' . d.code : ''), split(d.message, '\n')[0])
-      let item = {'filename': d.file, 'lnum': d.lnum, 'end_lnum': d.end_lnum, 'col': d.col, 'end_col': d.end_col, 'text': text, 'type': d.severity[0]}
-      call add(loc_ranges, d.location.range)
-      call add(items, item)
-    endfor
-    call setqflist([], ' ', {'title': 'CocDiagnosticList', 'items': items, 'context': {'bqf': {'lsp_ranges_hl': loc_ranges}} })
-    botright copen
-  endfunction
+  " function! s:coc_qf_diagnostic() abort
+  "   if !get(g:, 'coc_service_initialized', 0)
+  "     return
+  "   endif
+  "   let diagnostic_list = CocAction('diagnosticList')
+  "   let items = []
+  "   let loc_ranges = []
+  "   for d in diagnostic_list
+  "     let text = printf('[%s%s] %s', (empty(d.source) ? 'coc.nvim' : d.source), (d.code ? ' ' . d.code : ''), split(d.message, '\n')[0])
+  "     let item = {'filename': d.file, 'lnum': d.lnum, 'end_lnum': d.end_lnum, 'col': d.col, 'end_col': d.end_col, 'text': text, 'type': d.severity[0]}
+  "     call add(loc_ranges, d.location.range)
+  "     call add(items, item)
+  "   endfor
+  "   call setqflist([], ' ', {'title': 'CocDiagnosticList', 'items': items, 'context': {'bqf': {'lsp_ranges_hl': loc_ranges}} })
+  "   botright copen
+  " endfunction
 
   function! s:coc_qf_jump2loc(locs) abort
     let loc_ranges = map(deepcopy(a:locs), 'v:val.range')
@@ -375,7 +374,6 @@ if !empty(glob(s:bundle_location . '/coc.nvim'))
         \'coc-json',
         \'coc-lines',
         \'coc-lists',
-        \'coc-lua',
         \'coc-markdownlint',
         \'coc-marketplace',
         \'coc-mocword',
@@ -387,8 +385,8 @@ if !empty(glob(s:bundle_location . '/coc.nvim'))
         \'coc-snippets',
         \'coc-sql',
         \'coc-sqlfluff',
+        \'coc-sumneko-lua',
         \'coc-swagger',
-        \'coc-symbol-line',
         \'coc-tag',
         \'coc-toml',
         \'coc-tsserver',
@@ -500,18 +498,6 @@ if !empty(glob(s:bundle_location . '/coc.nvim'))
   " Add `:Fold` command to fold current buffer.
   command! -nargs=? Fold :call CocAction('fold', <f-args>)
   command! -nargs=0 Todos CocList -A --normal grep -w TODO|FIXME|FIX|FIXIT|BUG|HACK|XXX
-
-lua << EOF
-function _G.symbol_line()
-  local curwin = vim.g.statusline_winid or 0
-  local curbuf = vim.api.nvim_win_get_buf(curwin)
-  local ok, line = pcall(vim.api.nvim_buf_get_var, curbuf, 'coc_symbol_line')
-  return ok and line or ' ⋮'
-end
-
-vim.o.winbar = '%!v:lua.symbol_line()'
-EOF
-
 endif
 
 if !empty(glob(s:bundle_location . '/fzf.vim'))
