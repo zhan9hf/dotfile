@@ -43,7 +43,6 @@ require("lazy").setup({
       }
     end,
   },
-  { 'echasnovski/mini.starter', version = '*' },
   {
     'nvim-treesitter/nvim-treesitter',
     build = ":TSUpdate",
@@ -161,8 +160,6 @@ require("lazy").setup({
   {
     'vim-scripts/DoxygenToolkit.vim',
     init = function()
-      vim.g.DoxygenToolkit_blockHeader = "--------------------------------------------------------------------------"
-      vim.g.DoxygenToolkit_blockFooter = "----------------------------------------------------------------------------"
       vim.g.DoxygenToolkit_authorName = "Haifeng Zhang"
     end
   },
@@ -184,12 +181,10 @@ require("lazy").setup({
       -- diagnostics appeared/became resolved
       vim.opt.signcolumn = "yes"
 
-      vim.cmd([[set tagfunc=CocTagFunc]])
-      vim.cmd([[set formatexpr=CocActionAsync('formatSelected')]])
-      -- vim.opt.tagfunc = 'CocTagFunc'
-      -- vim.opt.formatexpr = "CocActionAsync('formatSelected')"
+      vim.opt.tagfunc = [[CocTagFunc]]
+      vim.opt.formatexpr = [[CocActionAsync('formatSelected')]]
 
-      vim.g.coc_enable_locationlist = 0
+      -- vim.g.coc_enable_locationlist = 0
       vim.g.coc_global_extensions = {
         'coc-clang-format-style-options',
         'coc-clangd',
@@ -302,7 +297,6 @@ require("lazy").setup({
 
       keyset("n", "K", '<CMD>lua _G.show_docs()<CR>', { silent = true })
 
-
       -- Highlight the symbol and its references on a CursorHold event(cursor is idle)
       vim.api.nvim_create_augroup("CocGroup", {})
       vim.api.nvim_create_autocmd("CursorHold", {
@@ -321,27 +315,57 @@ require("lazy").setup({
         command = [[if (!has('vim_starting') && winnr('$') == 1 && &filetype ==# 'coc-explorer') | q | endif]],
         group = "CocGroup",
       })
+      vim.api.nvim_create_autocmd("VimEnter", {
+        pattern = "*",
+        command = [[if !argc() | call CocActionAsync('runCommand', 'explorer') | endif]],
+        group = "CocGroup",
+      })
 
-      keyset('n', '<leader>ff', ':<C-u>CocList files<cr>', { noremap = true, silent = true })
-      keyset('n', '<leader>fb', ':<C-u>CocList buffers<cr>', { noremap = true, silent = true })
-      keyset('n', '<leader>fr', ':<C-u>CocList mru<cr>', { noremap = true, silent = true })
-      keyset('n', '<leader>s', ':<C-u>CocList gstatus<cr>', { noremap = true, silent = true })
-      keyset('n', '<leader>c', ':<C-u>CocList bcommits<cr>', { noremap = true, silent = true })
-      keyset('n', '<leader>o', ':<C-u>CocList outline<cr>', { noremap = true, silent = true })
+      vim.cmd [[
+      function! GrepFromSelected(type)
+        let saved_unnamed_register = @@
+        if a:type ==# 'v'
+          normal! `<v`>y
+        elseif a:type ==# 'char'
+          normal! `[v`]y
+        else
+          return
+        endif
+        let word = substitute(@@, '\n$', '', 'g')
+        let word = escape(word, '| ')
+        let @@ = saved_unnamed_register
+        execute 'CocList grep '.word
+      endfunction
+
+      vnoremap <leader>g :<C-u>call GrepFromSelected(visualmode())<CR>
+
+      command! -nargs=+ -complete=custom,GrepArgs Rg exe 'CocList grep '.<q-args>
+
+      function! GrepArgs(...)
+        let list = ['-S', '-smartcase', '-i', '-ignorecase', '-w', '-word',
+              \ '-e', '-regex', '-u', '-skip-vcs-ignores', '-t', '-extension']
+        return join(list, "\n")
+      endfunction
+      ]]
+
+      keyset('n', '<leader>ff', ':<C-u>CocList -A files<cr>', { noremap = true, silent = true })
+      keyset('n', '<leader>fb', ':<C-u>CocList -A --normal buffers<cr>', { noremap = true, silent = true })
+      keyset('n', '<leader>fr', ':<C-u>CocList -A --normal mru<cr>', { noremap = true, silent = true })
+      keyset('n', '<leader>o', ':<C-u>CocList -A outline<cr>', { noremap = true, silent = true })
       keyset('n', '<leader>y', ':<C-u>CocList -A --normal yank<cr>', { noremap = true, silent = true })
-      keyset('n', '<leader>g', ':<C-u>CocList grep<cr>', { noremap = true, silent = true })
+      keyset('n', '<leader>g', [[:exe 'CocList -I --input='.expand('<cword>').' grep'<cr>]],
+        { noremap = true, silent = true })
       keyset('n', '<leader>e', ':<C-u>CocCommand explorer<cr>', { noremap = true, silent = true })
       keyset('n', '<leader>a', ':<C-u>CocCommand clangd.switchSourceHeader<cr>', { noremap = true, silent = true })
       keyset('n', '<leader>u', ':<C-u>CocCommand git.chunkUndo<cr>', { noremap = true, silent = true })
-      keyset('n', '<leader>d', '<ESC>:CocDiagnostics<CR>', { noremap = true, silent = true })
-      keyset('n', '<leader>hi', '<ESC>:CocCommand git.chunkInfo<cr>', { noremap = true, silent = true })
-      keyset('n', '<leader>hb', '<ESC>:CocCommand git.showBlameDoc<cr>', { noremap = true, silent = true })
-      keyset("n", "<leader>p", ":<C-u>CocListResume<cr>", opts)
+      keyset('n', '<leader>d', '<ESC>:<C-u>CocDiagnostics<cr>', { noremap = true, silent = true })
+      keyset('n', '<leader>hi', '<ESC>:<C-u>CocCommand git.chunkInfo<cr>', { noremap = true, silent = true })
+      keyset('n', '<leader>hb', '<ESC>:<C-u>CocCommand git.showBlameDoc<cr>', { noremap = true, silent = true })
+      keyset("n", "<leader>p", ":<C-u>CocListResume<cr>", { noremap = true, silent = true })
 
       -- Remap keys for apply refactor code actions.
       keyset("n", "<leader>re", "<Plug>(coc-codeaction-refactor)", { silent = true })
       keyset("x", "<leader>r", "<Plug>(coc-codeaction-refactor-selected)", { silent = true })
-      keyset("n", "<leader>r", "<Plug>(coc-codeaction-refactor-selected)", { silent = true })
 
       -- Run the Code Lens actions on the current line
       -- keyset("n", "<leader>cl", "<Plug>(coc-codelens-action)", opts)
@@ -349,18 +373,18 @@ require("lazy").setup({
 
       -- Map function and class text objects
       -- NOTE: Requires 'textDocument.documentSymbol' support from the language server
-      keyset("x", "if", "<Plug>(coc-funcobj-i)", opts)
-      keyset("o", "if", "<Plug>(coc-funcobj-i)", opts)
-      keyset("x", "af", "<Plug>(coc-funcobj-a)", opts)
-      keyset("o", "af", "<Plug>(coc-funcobj-a)", opts)
-      keyset("x", "ic", "<Plug>(coc-classobj-i)", opts)
-      keyset("o", "ic", "<Plug>(coc-classobj-i)", opts)
-      keyset("x", "ac", "<Plug>(coc-classobj-a)", opts)
-      keyset("o", "ac", "<Plug>(coc-classobj-a)", opts)
-      keyset("x", "ig", "<Plug>(coc-git-chunk-inner)", opts)
-      keyset("o", "ig", "<Plug>(coc-git-chunk-inner)", opts)
-      keyset("x", "ag", "<Plug>(coc-git-chunk-outer)", opts)
-      keyset("o", "ag", "<Plug>(coc-git-chunk-outer)", opts)
+      keyset("x", "if", "<Plug>(coc-funcobj-i)", { silent = true, nowait = true })
+      keyset("o", "if", "<Plug>(coc-funcobj-i)", { silent = true, nowait = true })
+      keyset("x", "af", "<Plug>(coc-funcobj-a)", { silent = true, nowait = true })
+      keyset("o", "af", "<Plug>(coc-funcobj-a)", { silent = true, nowait = true })
+      keyset("x", "ic", "<Plug>(coc-classobj-i)", { silent = true, nowait = true })
+      keyset("o", "ic", "<Plug>(coc-classobj-i)", { silent = true, nowait = true })
+      keyset("x", "ac", "<Plug>(coc-classobj-a)", { silent = true, nowait = true })
+      keyset("o", "ac", "<Plug>(coc-classobj-a)", { silent = true, nowait = true })
+      keyset("x", "ig", "<Plug>(coc-git-chunk-inner)", { silent = true, nowait = true })
+      keyset("o", "ig", "<Plug>(coc-git-chunk-inner)", { silent = true, nowait = true })
+      keyset("x", "ag", "<Plug>(coc-git-chunk-outer)", { silent = true, nowait = true })
+      keyset("o", "ag", "<Plug>(coc-git-chunk-outer)", { silent = true, nowait = true })
 
       -- Remap <C-f> and <C-b> to scroll float windows/popups
       ---@diagnostic disable-next-line: redefined-local
@@ -428,6 +452,10 @@ vim.opt.mouse = "a"
 vim.opt.mousehide = true
 vim.opt.helplang = "cn"
 
+vim.opt.shiftwidth = 2
+vim.opt.expandtab = true
+vim.opt.tabstop = 2
+vim.opt.softtabstop = 2
 vim.opt.foldmethod = 'expr'
 vim.opt.backspace = 'indent,eol,start'
 vim.opt.inccommand = 'split'
@@ -462,13 +490,13 @@ vim.api.nvim_create_autocmd({ "BufNewFile", "BufRead" }, {
   group = "PrivateGroup",
 })
 
-vim.api.nvim_create_autocmd("FileType", {
-  pattern = { "json", "vim", "yaml", "cpp", "c", "cmake" },
-  callback = function()
-    vim.opt_local.shiftwidth = 2; vim.opt_local.tabstop = 2
-  end,
-  group = "PrivateGroup",
-})
+-- vim.api.nvim_create_autocmd("FileType", {
+--   pattern = { "json", "vim", "yaml", "cpp", "c", "cmake" },
+--   callback = function()
+--     vim.opt_local.shiftwidth = 2; vim.opt_local.tabstop = 2
+--   end,
+--   group = "PrivateGroup",
+-- })
 
 vim.api.nvim_create_autocmd("FileType", {
   pattern = "qf",
@@ -509,6 +537,7 @@ vim.api.nvim_set_keymap('n', '<C-j>', '<C-w>j', { noremap = true })
 vim.api.nvim_set_keymap('x', '<', '<gv', { noremap = true })
 vim.api.nvim_set_keymap('x', '>', '>gv', { noremap = true })
 vim.api.nvim_set_keymap('i', '<S-Insert>', '<C-R>+', { noremap = true })
-vim.api.nvim_set_keymap('n', '<leader>i', ':e ~/AppData/Local/nvim/init.lua<cr>', { noremap = true })
+vim.api.nvim_set_keymap('n', '<leader>i', ':e $MYVIMRC<cr>', { noremap = true })
+vim.api.nvim_set_keymap('n', '<leader>c', ':cclose<bar>lclose<CR>', { noremap = true })
 vim.api.nvim_set_keymap('n', '?', '/\\<\\><Left><Left>', { noremap = true })
 vim.api.nvim_set_keymap('v', '//', 'y/\\V<C-R>=escape(@",\'/\\\')<cr><cr>', { noremap = true })
