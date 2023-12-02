@@ -358,7 +358,7 @@ require("lazy").setup({
       keyset('n', '<leader>e', ':<C-u>CocCommand explorer<cr>', { noremap = true, silent = true })
       keyset('n', '<leader>a', ':<C-u>CocCommand clangd.switchSourceHeader<cr>', { noremap = true, silent = true })
       keyset('n', '<leader>u', ':<C-u>CocCommand git.chunkUndo<cr>', { noremap = true, silent = true })
-      keyset('n', '<leader>d', '<ESC>:<C-u>CocDiagnostics<cr>', { noremap = true, silent = true })
+      keyset('n', '<leader>d', ':<C-u>CocList -A --normal diagnostics<cr>', { noremap = true, silent = true })
       keyset('n', '<leader>hi', '<ESC>:<C-u>CocCommand git.chunkInfo<cr>', { noremap = true, silent = true })
       keyset('n', '<leader>hb', '<ESC>:<C-u>CocCommand git.showBlameDoc<cr>', { noremap = true, silent = true })
       keyset("n", "<leader>p", ":<C-u>CocListResume<cr>", { noremap = true, silent = true })
@@ -368,7 +368,7 @@ require("lazy").setup({
       keyset("x", "<leader>r", "<Plug>(coc-codeaction-refactor-selected)", { silent = true })
 
       -- Run the Code Lens actions on the current line
-      -- keyset("n", "<leader>cl", "<Plug>(coc-codelens-action)", opts)
+      keyset("n", "<leader>cl", "<Plug>(coc-codelens-action)", { silent = true })
 
 
       -- Map function and class text objects
@@ -508,11 +508,11 @@ vim.api.nvim_create_autocmd("FileType", {
   group = "PrivateGroup",
 })
 
-vim.api.nvim_create_autocmd("BufReadPost", {
-  pattern = "*.log",
-  command = "normal! G",
-  group = "PrivateGroup",
-})
+-- vim.api.nvim_create_autocmd("BufReadPost", {
+--   pattern = [[*.log]],
+--   command = [[normal! G]],
+--   group = "PrivateGroup",
+-- })
 
 vim.api.nvim_create_user_command("E", "e", {})
 vim.api.nvim_create_user_command("Q", "q", {})
@@ -538,6 +538,5 @@ vim.api.nvim_set_keymap('x', '<', '<gv', { noremap = true })
 vim.api.nvim_set_keymap('x', '>', '>gv', { noremap = true })
 vim.api.nvim_set_keymap('i', '<S-Insert>', '<C-R>+', { noremap = true })
 vim.api.nvim_set_keymap('n', '<leader>i', ':e $MYVIMRC<cr>', { noremap = true })
-vim.api.nvim_set_keymap('n', '<leader>c', ':cclose<bar>lclose<CR>', { noremap = true })
 vim.api.nvim_set_keymap('n', '?', '/\\<\\><Left><Left>', { noremap = true })
 vim.api.nvim_set_keymap('v', '//', 'y/\\V<C-R>=escape(@",\'/\\\')<cr><cr>', { noremap = true })
