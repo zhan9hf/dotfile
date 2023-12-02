@@ -12,6 +12,9 @@ end
 
 vim.opt.rtp:prepend(lazypath)
 
+vim.g.mapleader = ' '
+vim.g.maplocalleader = '\\'
+
 require("lazy").setup({
   {
     'morhetz/gruvbox',
@@ -42,6 +45,20 @@ require("lazy").setup({
         }
       }
     end,
+  },
+  {
+    "mhinz/vim-startify",
+    init = function()
+      vim.g.startify_change_to_dir = 0
+      vim.g.startify_change_to_vcs_root = 1
+
+      vim.api.nvim_create_augroup("StartifyGroup", { clear = true })
+      vim.api.nvim_create_autocmd("VimEnter", {
+        pattern = "*",
+        command = [[if !argc() | Startify | endif]],
+        group = "StartifyGroup"
+      })
+    end
   },
   {
     'nvim-treesitter/nvim-treesitter',
@@ -90,19 +107,52 @@ require("lazy").setup({
   },
   {
     'kevinhwang91/nvim-hlslens',
+    keys = {
+      {
+        "n",
+        [[<Cmd>execute('normal! ' . v:count1 . 'n')<CR><Cmd>lua require('hlslens').start()<CR>]],
+        desc = "Next match",
+        { noremap = true, silent = true },
+        mode = "n",
+      },
+      {
+        "N",
+        [[<Cmd>execute('normal! ' . v:count1 . 'N')<CR><Cmd>lua require('hlslens').start()<CR>]],
+        desc = "Previous match",
+        { noremap = true, silent = true },
+        mode = "n",
+      },
+      {
+        "*",
+        [[*<Cmd>lua require('hlslens').start()<CR>]],
+        desc = "Next match",
+        { noremap = true, silent = true },
+        mode = "n",
+      },
+      {
+        "#",
+        [[#<Cmd>lua require('hlslens').start()<CR>]],
+        desc = "Previous match",
+        { noremap = true, silent = true },
+        mode = "n",
+      },
+      {
+        "g*",
+        [[g*<Cmd>lua require('hlslens').start()<CR>]],
+        desc = "Next match",
+        { noremap = true, silent = true },
+        mode = "n",
+      },
+      {
+        "g#",
+        [[g#<Cmd>lua require('hlslens').start()<CR>]],
+        desc = "Previous match",
+        { noremap = true, silent = true },
+        mode = "n",
+      },
+    },
     config = function()
       require('hlslens').setup()
-      local kopts = { noremap = true, silent = true }
-      vim.api.nvim_set_keymap('n', 'n',
-        [[<Cmd>execute('normal! ' . v:count1 . 'n')<CR><Cmd>lua require('hlslens').start()<CR>]],
-        kopts)
-      vim.api.nvim_set_keymap('n', 'N',
-        [[<Cmd>execute('normal! ' . v:count1 . 'N')<CR><Cmd>lua require('hlslens').start()<CR>]],
-        kopts)
-      vim.api.nvim_set_keymap('n', '*', [[*<Cmd>lua require('hlslens').start()<CR>]], kopts)
-      vim.api.nvim_set_keymap('n', '#', [[#<Cmd>lua require('hlslens').start()<CR>]], kopts)
-      vim.api.nvim_set_keymap('n', 'g*', [[g*<Cmd>lua require('hlslens').start()<CR>]], kopts)
-      vim.api.nvim_set_keymap('n', 'g#', [[g#<Cmd>lua require('hlslens').start()<CR>]], kopts)
     end
   },
   'bronson/vim-visual-star-search',
@@ -167,8 +217,6 @@ require("lazy").setup({
     'neoclide/coc.nvim',
     branch = 'release',
     init = function()
-      vim.g.mapleader = ' '
-      vim.g.maplocalleader = '\\'
       -- Some servers have issues with backup files, see #649
       vim.opt.backup = false
       vim.opt.writebackup = false
@@ -231,59 +279,11 @@ require("lazy").setup({
         asciidoc = 'markdown'
       }
 
-      local keyset = vim.keymap.set
-      -- Autocomplete
       function _G.check_back_space()
         local col = vim.fn.col('.') - 1
         return col == 0 or vim.fn.getline('.'):sub(col, col):match('%s') ~= nil
       end
 
-      -- Use Tab for trigger completion with characters ahead and navigate
-      -- NOTE: There's always a completion item selected by default, you may want to enable
-      -- no select by setting `"suggest.noselect": true` in your configuration file
-      -- NOTE: Use command ':verbose imap <tab>' to make sure Tab is not mapped by
-      -- other plugins before putting this into your config
-      local opts = { silent = true, noremap = true, expr = true, replace_keycodes = false }
-      keyset("i", "<TAB>", 'coc#pum#visible() ? coc#pum#next(1) : v:lua.check_back_space() ? "<TAB>" : coc#refresh()',
-        opts)
-      keyset("i", "<S-TAB>", [[coc#pum#visible() ? coc#pum#prev(1) : "\<C-h>"]], opts)
-
-      -- Make <CR> to accept selected completion item or notify coc.nvim to format
-      -- <C-g>u breaks current undo, please make your own choice
-      keyset("i", "<cr>", [[coc#pum#visible() ? coc#pum#confirm() : "\<C-g>u\<CR>\<c-r>=coc#on_enter()\<CR>"]], opts)
-
-      -- Use <c-j> to trigger snippets
-      keyset("i", "<c-j>", "<Plug>(coc-snippets-expand-jump)")
-      -- Use <c-space> to trigger completion
-      keyset("i", "<c-space>", "coc#refresh()", { silent = true, expr = true })
-      -- Use <c-e> to cacel completion
-      keyset('i', '<c-e>', [[coc#pum#visible() ? coc#pum#cancel() : "\\<End>"]],
-        opts)
-
-      -- Use `[d` and `]d` to navigate diagnostics
-      -- Use `:CocDiagnostics` to get all diagnostics of current buffer in location list
-      keyset("n", "[d", "<Plug>(coc-diagnostic-prev)", { silent = true })
-      keyset("n", "]d", "<Plug>(coc-diagnostic-next)", { silent = true })
-      keyset('n', '[h', '<Plug>(coc-git-prevchunk)', { silent = true })
-      keyset('n', ']h', '<Plug>(coc-git-nextchunk)', { silent = true })
-      keyset('n', '[c', '<Plug>(coc-git-prevconflict)', { silent = true })
-      keyset('n', ']c', '<Plug>(coc-git-nextconflict)', { silent = true })
-      keyset('n', ']s', '<Plug>(coc-typos-next)', { silent = true })
-      keyset('n', '[s', '<Plug>(coc-typos-prev)', { silent = true })
-      keyset('n', 'z=', '<Plug>(coc-typos-fix)', { silent = true })
-
-      -- GoTo code navigation
-      keyset('n', 'gs', '<Plug>(coc-git-chunkinfo)', { silent = true })
-      keyset('n', 'gd', '<Plug>(coc-definition)', { silent = true })
-      keyset('n', 'gy', '<Plug>(coc-type-definition)', { silent = true })
-      keyset('n', 'gi', '<Plug>(coc-implementation)', { silent = true })
-      keyset('n', 'gr', '<Plug>(coc-references-used)', { silent = true })
-      keyset("n", "gR", "<Plug>(coc-rename)", { silent = true })
-      keyset('n', 'gl', '<Plug>(coc-codeaction-line)', { silent = true })
-      keyset('n', 'ga', '<Plug>(coc-codeaction-cursor)', { silent = true })
-      keyset('n', 'gk', '<Plug>(coc-fix-current)', { silent = true })
-
-      -- Use K to show documentation in preview window
       function _G.show_docs()
         local cw = vim.fn.expand('<cword>')
         if vim.fn.index({ 'vim', 'help' }, vim.bo.filetype) >= 0 then
@@ -294,32 +294,6 @@ require("lazy").setup({
           vim.api.nvim_command('!' .. vim.o.keywordprg .. ' ' .. cw)
         end
       end
-
-      keyset("n", "K", '<CMD>lua _G.show_docs()<CR>', { silent = true })
-
-      -- Highlight the symbol and its references on a CursorHold event(cursor is idle)
-      vim.api.nvim_create_augroup("CocGroup", {})
-      vim.api.nvim_create_autocmd("CursorHold", {
-        group = "CocGroup",
-        command = [[silent call CocActionAsync('highlight')]],
-        desc = "Highlight symbol under cursor on CursorHold"
-      })
-      vim.api.nvim_create_autocmd("User", {
-        pattern = "CocJumpPlaceholder",
-        command = "call CocActionAsync('showSignatureHelp')",
-        group = "CocGroup",
-        desc = "Update signature help on jump placeholder"
-      })
-      vim.api.nvim_create_autocmd("BufEnter", {
-        pattern = "*",
-        command = [[if (!has('vim_starting') && winnr('$') == 1 && &filetype ==# 'coc-explorer') | q | endif]],
-        group = "CocGroup",
-      })
-      vim.api.nvim_create_autocmd("VimEnter", {
-        pattern = "*",
-        command = [[if !argc() | call CocActionAsync('runCommand', 'explorer') | endif]],
-        group = "CocGroup",
-      })
 
       vim.cmd [[
       function! GrepFromSelected(type)
@@ -347,44 +321,324 @@ require("lazy").setup({
         return join(list, "\n")
       endfunction
       ]]
-
-      keyset('n', '<leader>ff', ':<C-u>CocList -A files<cr>', { noremap = true, silent = true })
-      keyset('n', '<leader>fb', ':<C-u>CocList -A --normal buffers<cr>', { noremap = true, silent = true })
-      keyset('n', '<leader>fr', ':<C-u>CocList -A --normal mru<cr>', { noremap = true, silent = true })
-      keyset('n', '<leader>o', ':<C-u>CocList -A outline<cr>', { noremap = true, silent = true })
-      keyset('n', '<leader>y', ':<C-u>CocList -A --normal yank<cr>', { noremap = true, silent = true })
-      keyset('n', '<leader>g', [[:exe 'CocList -I --input='.expand('<cword>').' grep'<cr>]],
-        { noremap = true, silent = true })
-      keyset('n', '<leader>e', ':<C-u>CocCommand explorer<cr>', { noremap = true, silent = true })
-      keyset('n', '<leader>a', ':<C-u>CocCommand clangd.switchSourceHeader<cr>', { noremap = true, silent = true })
-      keyset('n', '<leader>u', ':<C-u>CocCommand git.chunkUndo<cr>', { noremap = true, silent = true })
-      keyset('n', '<leader>d', ':<C-u>CocList -A --normal diagnostics<cr>', { noremap = true, silent = true })
-      keyset('n', '<leader>hi', '<ESC>:<C-u>CocCommand git.chunkInfo<cr>', { noremap = true, silent = true })
-      keyset('n', '<leader>hb', '<ESC>:<C-u>CocCommand git.showBlameDoc<cr>', { noremap = true, silent = true })
-      keyset("n", "<leader>p", ":<C-u>CocListResume<cr>", { noremap = true, silent = true })
-
-      -- Remap keys for apply refactor code actions.
-      keyset("n", "<leader>re", "<Plug>(coc-codeaction-refactor)", { silent = true })
-      keyset("x", "<leader>r", "<Plug>(coc-codeaction-refactor-selected)", { silent = true })
-
-      -- Run the Code Lens actions on the current line
-      keyset("n", "<leader>cl", "<Plug>(coc-codelens-action)", { silent = true })
-
-
-      -- Map function and class text objects
-      -- NOTE: Requires 'textDocument.documentSymbol' support from the language server
-      keyset("x", "if", "<Plug>(coc-funcobj-i)", { silent = true, nowait = true })
-      keyset("o", "if", "<Plug>(coc-funcobj-i)", { silent = true, nowait = true })
-      keyset("x", "af", "<Plug>(coc-funcobj-a)", { silent = true, nowait = true })
-      keyset("o", "af", "<Plug>(coc-funcobj-a)", { silent = true, nowait = true })
-      keyset("x", "ic", "<Plug>(coc-classobj-i)", { silent = true, nowait = true })
-      keyset("o", "ic", "<Plug>(coc-classobj-i)", { silent = true, nowait = true })
-      keyset("x", "ac", "<Plug>(coc-classobj-a)", { silent = true, nowait = true })
-      keyset("o", "ac", "<Plug>(coc-classobj-a)", { silent = true, nowait = true })
-      keyset("x", "ig", "<Plug>(coc-git-chunk-inner)", { silent = true, nowait = true })
-      keyset("o", "ig", "<Plug>(coc-git-chunk-inner)", { silent = true, nowait = true })
-      keyset("x", "ag", "<Plug>(coc-git-chunk-outer)", { silent = true, nowait = true })
-      keyset("o", "ag", "<Plug>(coc-git-chunk-outer)", { silent = true, nowait = true })
+    end,
+    keys = {
+      {
+        "[d",
+        "<Plug>(coc-diagnostic-prev)",
+        desc = "Previous diagnostic",
+        mode = "n",
+        { silent = true },
+      },
+      {
+        "]d",
+        "<Plug>(coc-diagnostic-next)",
+        desc = "Next diagnostic",
+        mode = "n",
+        { silent = true },
+      },
+      {
+        "[h",
+        "<Plug>(coc-git-prevchunk)",
+        desc = "Previous git chunk",
+        mode = "n",
+        { silent = true },
+      },
+      {
+        "]h",
+        "<Plug>(coc-git-nextchunk)",
+        desc = "Next git chunk",
+        mode = "n",
+        { silent = true },
+      },
+      {
+        "[c",
+        "<Plug>(coc-git-prevconflict)",
+        desc = "Previous git conflict",
+        mode = "n",
+        { silent = true },
+      },
+      {
+        "]c",
+        "<Plug>(coc-git-nextconflict)",
+        desc = "Next git conflict",
+        mode = "n",
+        { silent = true },
+      },
+      {
+        "[s",
+        "<Plug>(coc-typos-prev)",
+        desc = "Previous typo",
+        mode = "n",
+        { silent = true },
+      },
+      {
+        "]s",
+        "<Plug>(coc-typos-next)",
+        desc = "Next typo",
+        mode = "n",
+        { silent = true },
+      },
+      {
+        "z=",
+        "<Plug>(coc-typos-fix)",
+        desc = "Fix typo",
+        mode = "n",
+        { silent = true },
+      },
+      {
+        "gs",
+        "<Plug>(coc-git-chunkinfo)",
+        desc = "Git chunk info",
+        mode = "n",
+        { silent = true },
+      },
+      {
+        "gd",
+        "<Plug>(coc-definition)",
+        desc = "Go to definition",
+        mode = "n",
+        { silent = true },
+      },
+      {
+        "gy",
+        "<Plug>(coc-type-definition)",
+        desc = "Go to type definition",
+        mode = "n",
+        { silent = true },
+      },
+      {
+        "gi",
+        "<Plug>(coc-implementation)",
+        desc = "Go to implementation",
+        mode = "n",
+        { silent = true },
+      },
+      {
+        "gr",
+        "<Plug>(coc-references-used)",
+        desc = "Go to references",
+        mode = "n",
+        { silent = true },
+      },
+      {
+        "gR",
+        "<Plug>(coc-rename)",
+        desc = "Rename",
+        mode = "n",
+        { silent = true },
+      },
+      {
+        "gl",
+        "<Plug>(coc-codeaction-line)",
+        desc = "Code action line",
+        mode = "n",
+        { silent = true },
+      },
+      {
+        "ga",
+        "<Plug>(coc-codeaction-cursor)",
+        desc = "Code action cursor",
+        mode = "n",
+        { silent = true },
+      },
+      {
+        "gk",
+        "<Plug>(coc-fix-current)",
+        desc = "Fix current",
+        mode = "n",
+        { silent = true },
+      },
+      {
+        "K",
+        "<CMD>lua _G.show_docs()<CR>",
+        desc = "Show docs",
+        mode = "n",
+        { silent = true },
+      },
+      {
+        "<leader>ff",
+        "<CMD>CocList -A files<CR>",
+        desc = "Find files",
+        mode = "n",
+        { noremap = true, silent = true },
+      },
+      {
+        "<leader>fb",
+        "<CMD>CocList -A --normal buffers<CR>",
+        desc = "Find buffers",
+        mode = "n",
+        { noremap = true, silent = true },
+      },
+      {
+        "<leader>fr",
+        "<CMD>CocList -A --normal mru<CR>",
+        desc = "Find recent files",
+        mode = "n",
+        { noremap = true, silent = true },
+      },
+      {
+        "<leader>o",
+        "<CMD>CocList -A outline<CR>",
+        desc = "Find outline",
+        mode = "n",
+        { noremap = true, silent = true },
+      },
+      {
+        "<leader>y",
+        "<CMD>CocList -A --normal yank<CR>",
+        desc = "Find yank history",
+        mode = "n",
+        { noremap = true, silent = true },
+      },
+      {
+        "<leader>g",
+        [[<CMD>exe 'CocList -I --input='.expand('<cword>').' grep'<CR>]],
+        desc = "Find word under cursor",
+        mode = "n",
+        { noremap = true, silent = true },
+      },
+      {
+        "<leader>e",
+        "<CMD>CocCommand explorer<CR>",
+        desc = "Toggle explorer",
+        mode = "n",
+        { noremap = true, silent = true },
+      },
+      {
+        "<leader>a",
+        "<CMD>CocCommand clangd.switchSourceHeader<CR>",
+        desc = "Switch source/header",
+        mode = "n",
+        { noremap = true, silent = true },
+      },
+      {
+        "<leader>u",
+        "<CMD>CocCommand git.chunkUndo<CR>",
+        desc = "Undo git chunk",
+        mode = "n",
+        { noremap = true, silent = true },
+      },
+      {
+        "<leader>d",
+        "<CMD>CocList -A --normal diagnostics<CR>",
+        desc = "Show diagnostics",
+        mode = "n",
+        { noremap = true, silent = true },
+      },
+      {
+        "<leader>hi",
+        "<CMD>CocCommand git.chunkInfo<CR>",
+        desc = "Show git chunk info",
+        mode = "n",
+        { noremap = true, silent = true },
+      },
+      {
+        "<leader>hb",
+        "<CMD>CocCommand git.showBlameDoc<CR>",
+        desc = "Show git blame",
+        mode = "n",
+        { noremap = true, silent = true },
+      },
+      {
+        "<leader>p",
+        "<CMD>CocListResume<CR>",
+        desc = "Resume list",
+        mode = "n",
+        { noremap = true, silent = true },
+      },
+      {
+        "<leader>re",
+        "<Plug>(coc-codeaction-refactor)",
+        desc = "Refactor",
+        mode = "n",
+        { silent = true },
+      },
+      {
+        "<leader>r",
+        "<Plug>(coc-codeaction-refactor-selected)",
+        desc = "Refactor selected",
+        mode = "x",
+        { silent = true },
+      },
+      {
+        "<leader>cl",
+        "<Plug>(coc-codelens-action)",
+        desc = "Run code lens action",
+        mode = "n",
+        { silent = true },
+      },
+      {
+        "if",
+        "<Plug>(coc-funcobj-i)",
+        desc = "Function inner",
+        mode = { "x", "o" },
+        { silent = true, nowait = true },
+      },
+      {
+        "af",
+        "<Plug>(coc-funcobj-a)",
+        desc = "Function around",
+        mode = { "x", "o" },
+        { silent = true, nowait = true },
+      },
+      {
+        "ic",
+        "<Plug>(coc-classobj-i)",
+        desc = "Class inner",
+        mode = { "x", "o" },
+        { silent = true, nowait = true },
+      },
+      {
+        "ac",
+        "<Plug>(coc-classobj-a)",
+        desc = "Class around",
+        mode = { "x", "o" },
+        { silent = true, nowait = true },
+      },
+      {
+        "ig",
+        "<Plug>(coc-git-chunk-inner)",
+        desc = "Git chunk inner",
+        mode = { "x", "o" },
+        { silent = true, nowait = true },
+      },
+      {
+        "ag",
+        "<Plug>(coc-git-chunk-outer)",
+        desc = "Git chunk outer",
+        mode = { "x", "o" },
+        { silent = true, nowait = true },
+      },
+      {
+        "<c-s>",
+        "<Plug>(coc-range-select)",
+        desc = "Selection ranges",
+        mode = { "n", "x" },
+        { silent = true },
+      }
+    },
+    config = function()
+      local keyset = vim.keymap.set
+      -- Use Tab for trigger completion with characters ahead and navigate
+      -- NOTE: There's always a completion item selected by default, you may want to enable
+      -- no select by setting `"suggest.noselect": true` in your configuration file
+      -- NOTE: Use command ':verbose imap <tab>' to make sure Tab is not mapped by
+      -- other plugins before putting this into your config
+      local opts = { silent = true, noremap = true, expr = true, replace_keycodes = false }
+      keyset("i", "<TAB>", 'coc#pum#visible() ? coc#pum#next(1) : v:lua.check_back_space() ? "<TAB>" : coc#refresh()',
+        opts)
+      keyset("i", "<S-TAB>", [[coc#pum#visible() ? coc#pum#prev(1) : "\<C-h>"]], opts)
+      -- Make <CR> to accept selected completion item or notify coc.nvim to format
+      -- <C-g>u breaks current undo, please make your own choice
+      keyset("i", "<cr>", [[coc#pum#visible() ? coc#pum#confirm() : "\<C-g>u\<CR>\<c-r>=coc#on_enter()\<CR>"]], opts)
+      -- Use <c-j> to trigger snippets
+      keyset("i", "<c-j>", "<Plug>(coc-snippets-expand-jump)")
+      -- Use <c-space> to trigger completion
+      keyset("i", "<c-space>", "coc#refresh()", { silent = true, expr = true })
+      -- Use <c-e> to cacel completion
+      keyset('i', '<c-e>', [[coc#pum#visible() ? coc#pum#cancel() : "\\<End>"]],
+        opts)
 
       -- Remap <C-f> and <C-b> to scroll float windows/popups
       ---@diagnostic disable-next-line: redefined-local
@@ -396,36 +650,43 @@ require("lazy").setup({
       keyset("v", "<C-f>", 'coc#float#has_scroll() ? coc#float#scroll(1) : "<C-f>"', opts)
       keyset("v", "<C-b>", 'coc#float#has_scroll() ? coc#float#scroll(0) : "<C-b>"', opts)
 
-      -- Use CTRL-S for selections ranges
-      -- Requires 'textDocument/selectionRange' support of language server
-      keyset("n", "<C-s>", "<Plug>(coc-range-select)", { silent = true })
-      keyset("x", "<C-s>", "<Plug>(coc-range-select)", { silent = true })
+      vim.api.nvim_create_augroup("CocGroup", {})
+      vim.api.nvim_create_autocmd("CursorHold", {
+        group = "CocGroup",
+        command = [[silent call CocActionAsync('highlight')]],
+        desc = "Highlight symbol under cursor on CursorHold"
+      })
+      vim.api.nvim_create_autocmd("User", {
+        pattern = "CocJumpPlaceholder",
+        command = "call CocActionAsync('showSignatureHelp')",
+        group = "CocGroup",
+        desc = "Update signature help on jump placeholder"
+      })
+      vim.api.nvim_create_autocmd("BufEnter", {
+        pattern = "*",
+        command = [[if (!has('vim_starting') && winnr('$') == 1 && &filetype ==# 'coc-explorer') | q | endif]],
+        group = "CocGroup",
+      })
+      -- vim.api.nvim_create_autocmd("VimEnter", {
+      --   pattern = "*",
+      --   command = [[if !argc() | call CocActionAsync('runCommand', 'explorer') | endif]],
+      --   group = "CocGroup",
+      -- })
 
       -- Add `:Format` command to format current buffer
       vim.api.nvim_create_user_command("Format", "call CocAction('format')", {})
-
       -- " Add `:Fold` command to fold current buffer
       vim.api.nvim_create_user_command("Fold", "call CocAction('fold', <f-args>)", { nargs = '?' })
-
       -- Add `:OR` command for organize imports of the current buffer
       vim.api.nvim_create_user_command("OR", "call CocActionAsync('runCommand', 'editor.action.organizeImport')", {})
-
       vim.api.nvim_create_user_command('Todos', function()
         vim.cmd("CocList -A --normal grep -w TODO|FIXME|FIX|FIXIT|BUG|HACK|XXX")
       end, { nargs = 0 })
-
-      -- Add (Neo)Vim's native statusline support
-      -- NOTE: Please see `:h coc-status` for integrations with external plugins that
-      -- provide custom statusline: lightline.vim, vim-airline
-      -- vim.opt.statusline:prepend("%{coc#status()}%{get(b:,'coc_current_function','')}")
     end
   },
   'github/copilot.vim',
   'honza/vim-snippets',
 })
-
-vim.g.mapleader = ' '
-vim.g.maplocalleader = '\\'
 
 vim.opt.encoding = "utf-8"
 -- vim.opt.fileencoding = "utf-8"
