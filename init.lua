@@ -174,6 +174,38 @@ require("lazy").setup({
     }
   },
   {
+    'nvim-pack/nvim-spectre',
+    config = function()
+      require('spectre').setup()
+    end,
+    dependencies = {
+      'nvim-lua/plenary.nvim',
+    },
+    keys = {
+      {
+        "<leader>S",
+        '<cmd>lua require("spectre").toggle()<CR>',
+        desc = "Toggle Spectre",
+      },
+      {
+        "<leader>sw",
+        '<cmd>lua require("spectre").open_visual({select_word=true})<CR>',
+        desc = "Search current word",
+      },
+      {
+        "<leader>sw",
+        '<esc><cmd>lua require("spectre").open_visual()<CR>',
+        desc = "Search current word",
+        mode = "v",
+      },
+      {
+        "<leader>sp",
+        '<cmd>lua require("spectre").open_file_search({select_word=true})<CR>',
+        desc = "Search on current file",
+      }
+    }
+  },
+  {
     'phaazon/hop.nvim',
     config = function()
       require 'hop'.setup {}
@@ -216,6 +248,7 @@ require("lazy").setup({
   {
     'neoclide/coc.nvim',
     branch = 'release',
+    lazy = false,
     init = function()
       -- Some servers have issues with backup files, see #649
       vim.opt.backup = false
