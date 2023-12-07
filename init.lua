@@ -247,6 +247,9 @@ require("lazy").setup({
   },
   {
     'neoclide/coc.nvim',
+    dependencies = {
+      'honza/vim-snippets',
+    },
     branch = 'release',
     lazy = false,
     init = function()
@@ -269,6 +272,7 @@ require("lazy").setup({
       vim.g.coc_global_extensions = {
         'coc-clang-format-style-options',
         'coc-clangd',
+        '@hexuhua/coc-copilot',
         'coc-cmake',
         'coc-diagnostic',
         'coc-dictionary',
@@ -329,6 +333,19 @@ require("lazy").setup({
       end
 
       vim.cmd [[
+      function! s:go_to_definition()
+        if CocActionAsync('jumpDefinition')
+          return v:true
+        endif
+
+        let ret = execute("silent! normal \<C-]>")
+        if ret =~ "Error" || ret =~ "错误"
+          call searchdecl(expand('<cword>'))
+        endif
+      endfunction
+
+      nmap <silent> gd :call <SID>go_to_definition()<CR>
+
       function! GrepFromSelected(type)
         let saved_unnamed_register = @@
         if a:type ==# 'v'
@@ -426,13 +443,13 @@ require("lazy").setup({
         mode = "n",
         { silent = true },
       },
-      {
-        "gd",
-        "<Plug>(coc-definition)",
-        desc = "Go to definition",
-        mode = "n",
-        { silent = true },
-      },
+      -- {
+      --   "gd",
+      --   "<Plug>(coc-definition)",
+      --   desc = "Go to definition",
+      --   mode = "n",
+      --   { silent = true },
+      -- },
       {
         "gy",
         "<Plug>(coc-type-definition)",
@@ -659,7 +676,10 @@ require("lazy").setup({
       -- NOTE: Use command ':verbose imap <tab>' to make sure Tab is not mapped by
       -- other plugins before putting this into your config
       local opts = { silent = true, noremap = true, expr = true, replace_keycodes = false }
-      keyset("i", "<TAB>", 'coc#pum#visible() ? coc#pum#next(1) : v:lua.check_back_space() ? "<TAB>" : coc#refresh()',
+      -- keyset("i", "<TAB>", 'coc#pum#visible() ? coc#pum#next(1) : v:lua.check_back_space() ? "<TAB>" : coc#refresh()',
+      --   opts)
+      keyset("i", "<TAB>",
+        [[coc#pum#visible() ? coc#pum#next(1):exists('b:_copilot.suggestions') ? copilot#Accept("\<CR>") : v:lua.check_back_space() ? "\<TAB>" : coc#refresh()]],
         opts)
       keyset("i", "<S-TAB>", [[coc#pum#visible() ? coc#pum#prev(1) : "\<C-h>"]], opts)
       -- Make <CR> to accept selected completion item or notify coc.nvim to format
@@ -667,6 +687,7 @@ require("lazy").setup({
       keyset("i", "<cr>", [[coc#pum#visible() ? coc#pum#confirm() : "\<C-g>u\<CR>\<c-r>=coc#on_enter()\<CR>"]], opts)
       -- Use <c-j> to trigger snippets
       keyset("i", "<c-j>", "<Plug>(coc-snippets-expand-jump)")
+
       -- Use <c-space> to trigger completion
       keyset("i", "<c-space>", "coc#refresh()", { silent = true, expr = true })
       -- Use <c-e> to cacel completion
@@ -717,9 +738,43 @@ require("lazy").setup({
       end, { nargs = 0 })
     end
   },
-  'github/copilot.vim',
-  'honza/vim-snippets',
+  {
+    'github/copilot.vim',
+    lazy = false,
+    init = function()
+      vim.g.copilot_no_tab_map = true
+      vim.g.copilot_proxy = "127.0.0.1:7890"
+    end,
+  },
 })
+
+if vim.g.neovide then
+  vim.o.guifont = "JetBrainsMono Nerd Font Mono:h12"
+  -- vim.g.neovide_fullscreen = true
+  vim.g.neovide_remember_window_size = true
+
+  local function set_ime(args)
+    if args.event:match("Enter$") then
+      vim.g.neovide_input_ime = true
+    else
+      vim.g.neovide_input_ime = false
+    end
+  end
+
+  local ime_input = vim.api.nvim_create_augroup("ime_input", { clear = true })
+
+  vim.api.nvim_create_autocmd({ "InsertEnter", "InsertLeave" }, {
+    group = ime_input,
+    pattern = "*",
+    callback = set_ime,
+  })
+
+  vim.api.nvim_create_autocmd({ "CmdlineEnter", "CmdlineLeave" }, {
+    group = ime_input,
+    pattern = "[/\\?]",
+    callback = set_ime,
+  })
+end
 
 vim.opt.encoding = "utf-8"
 -- vim.opt.fileencoding = "utf-8"
@@ -732,13 +787,13 @@ vim.opt.termguicolors = true
 vim.opt.number = true
 vim.opt.relativenumber = true
 vim.opt.wrap = false
-vim.opt.guioptions = ''
+-- vim.opt.guioptions = ''
 vim.opt.ruler = true
-vim.opt.laststatus = 2
+vim.opt.laststatus = 1
 vim.opt.showmode = true
 vim.opt.cursorline = false
-vim.opt.cmdheight = 2
-vim.opt.scrolloff = 5
+vim.opt.cmdheight = 1
+vim.opt.scrolloff = 3
 vim.opt.shortmess:append("c")
 vim.opt.list = true
 vim.opt.listchars = 'tab:→\\ ,trail:·,precedes:«,extends:»,eol:¬'
@@ -831,6 +886,8 @@ vim.api.nvim_set_keymap('n', '<C-j>', '<C-w>j', { noremap = true })
 vim.api.nvim_set_keymap('x', '<', '<gv', { noremap = true })
 vim.api.nvim_set_keymap('x', '>', '>gv', { noremap = true })
 vim.api.nvim_set_keymap('i', '<S-Insert>', '<C-R>+', { noremap = true })
+vim.api.nvim_set_keymap('c', '<S-Insert>', '<C-R>+', { noremap = true })
+vim.api.nvim_set_keymap('v', '<S-Insert>', '"0p', { noremap = true })
 vim.api.nvim_set_keymap('n', '<leader>i', ':e $MYVIMRC<cr>', { noremap = true })
 vim.api.nvim_set_keymap('n', '?', '/\\<\\><Left><Left>', { noremap = true })
 vim.api.nvim_set_keymap('v', '//', 'y/\\V<C-R>=escape(@",\'/\\\')<cr><cr>', { noremap = true })
