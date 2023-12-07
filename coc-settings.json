@@ -8,6 +8,7 @@
   "coc.preferences.currentFunctionSymbolAutoUpdate": true,
   "coc.preferences.formatOnSave": true,
   "coc.source.file.ignoreHidden": false,
+  "copilot.enablePreselect": false,
   "diagnostic.errorSign": "󰅚 ",
   "diagnostic.warningSign": "󰀪 ",
   "diagnostic.infoSign": "󰋽 ",
@@ -19,14 +20,12 @@
       "patterns": [
         ".git",
         ".hg",
-        ".projections.json"
       ]
     },
     "vcs-r": {
       "patterns": [
         ".git",
         ".hg",
-        ".projections.json"
       ],
       "bottomUp": true
     }
@@ -41,16 +40,37 @@
   ],
   "explorer.icon.source": "nvim-web-devicons",
   "explorer.width": 30,
+  "git.addGBlameToBufferVar": true,
+  "git.changedDecorator": " 󰃙",
+  "git.stagedDecorator": " 󰃘",
+  "git.untrackedDecorator": " ✩",
+  "git.conflictedDecorator": "⇡⇣",
+  "git.virtualTextPrefix": "  ",
+  "list.source.diagnostics.includeCode": false,
+  "list.source.diagnostics.pathFormat": "short",
   "list.source.grep.useLiteral": false,
   "list.source.grep.defaultArgs": [
     "--ignore-case"
   ],
-  "session.directory": "~/.config/nvim/sessions",
-  "session.saveOnVimLeave": true,
+  "snippets.userSnippetsDirectory": "~/UltiSnips",
+  "snippets.extends": {
+    "cpp": [
+      "c"
+    ],
+    "javascriptreact": [
+      "javascript"
+    ],
+    "typescript": [
+      "javascript"
+    ]
+  },
+  "suggest.enablePreselect": false,
+  "suggest.labelMaxLength": 50,
+  "suggest.maxCompleteItemCount": 200,
   "suggest.minTriggerInputLength": 2,
   "suggest.noselect": true,
-  "suggest.enablePreselect": false,
-  "suggest.maxCompleteItemCount": 200,
+  "suggest.selection": "recentlyUsedByPrefix",
+  "suggest.virtualText": true,
   "yank.highlight.duration": 200,
   "java.jdt.ls.vmargs": "-javaagent:/Users/zhanghf/.config/nvim/lombok.jar",
   "java.jdt.ls.java.home": "/usr/local/opt/openjdk@17",
