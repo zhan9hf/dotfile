@@ -9,10 +9,20 @@
   "coc.preferences.formatOnSave": true,
   "coc.source.file.ignoreHidden": false,
   "copilot.enablePreselect": false,
+  "copilot.limit": 10,
+  "copilot.priority": 50,
   "diagnostic.errorSign": "󰅚 ",
   "diagnostic.warningSign": "󰀪 ",
   "diagnostic.infoSign": "󰋽 ",
   "diagnostic.hintSign": "󰌶 ",
+  "diagnostic-languageserver.filetypes": {
+    "cpp": [
+      "cppcheck"
+    ],
+    "c": [
+      "cppcheck"
+    ]
+  },
   "explorer.file.reveal.auto": true,
   "explorer.icon.enableNerdfont": true,
   "explorer.root.customRules": {
