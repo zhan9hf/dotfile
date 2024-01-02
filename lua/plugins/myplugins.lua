@@ -9,7 +9,7 @@ return {
     opts = {
       -- colorscheme = "onedark",
       -- colorscheme = "tokyonight",
-      colorscheme = "catppuccin",
+      colorscheme = "gruvbox",
       -- catppuccin-latte, catppuccin-frappe, catppuccin-macchiato, catppuccin-mocha
     },
   },
@@ -105,6 +105,15 @@ return {
       -- format_on_save = {
       --   timeout_ms = 2000,
       -- },
+    },
+  },
+
+  {
+    "mfussenegger/nvim-lint",
+    opts = {
+      linters_by_ft = {
+        cpp = { "cppcheck" },
+      },
     },
   },
 
