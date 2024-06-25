@@ -156,6 +156,23 @@ return {
     opts = function(_, opts)
       -- opts.preselect = "None"
       table.insert(opts.sources, { name = "emoji" })
+      local cmp = require("cmp")
+      opts.mapping = vim.tbl_extend("force", opts.mapping, {
+        ["<Tab>"] = cmp.mapping(function(fallback)
+          if cmp.visible() then
+            cmp.select_next_item()
+          else
+            fallback()
+          end
+        end, { "i", "s" }),
+        ["<S-Tab>"] = cmp.mapping(function(fallback)
+          if cmp.visible() then
+            cmp.select_prev_item()
+          else
+            fallback()
+          end
+        end, { "i", "s" }),
+      })
     end,
   },
 }
