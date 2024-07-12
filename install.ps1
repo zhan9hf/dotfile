@@ -84,6 +84,8 @@ choco install x64dbg.portable
 
 choco install cppcheck
 
+choco install openssh
+
 #choco install explorersuite
 
 #choco install winscp
