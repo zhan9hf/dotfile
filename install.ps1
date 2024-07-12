@@ -74,11 +74,17 @@ choco install sysinternals
 
 choco install github-desktop
 
-choco install dingtalk
+choco install microsoft-windows-terminal
 
-choco install wechat
+choco install powertoys
 
-choco install tencentqq
+choco install ghidra
+
+#choco install dingtalk
+
+#choco install wechat
+
+#choco install tencentqq
 
 choco install x64dbg.portable
 
@@ -94,6 +100,8 @@ choco install openssh
 
 #choco install nutstore
 
+Import-Module $env:ChocolateyInstall\helpers\chocolateyProfile.psm1
+
 refreshenv
 
 oh-my-posh font install meslo # Meslo LGM NF
@@ -108,5 +116,5 @@ sudo gem install neovim
 
 sudo pip install cmakelang
 
-sudo pip install conan==1.60.2
+sudo pip install conan==1.63.0
 
