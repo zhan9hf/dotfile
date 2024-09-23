@@ -6,7 +6,7 @@ vim.opt.spell = false
 vim.opt.spelllang = {}
 
 if vim.g.neovide then
-  vim.o.guifont = "JetBrainsMono Nerd Font Mono:h12"
+  vim.o.guifont = "Hack Nerd Font:h11"
   -- vim.g.neovide_fullscreen = true
   vim.g.neovide_remember_window_size = true
 
