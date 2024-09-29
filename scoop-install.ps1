@@ -38,6 +38,9 @@ scoop install extras/geekuninstaller
 scoop install extras/snipaste
 scoop install extras/windows-terminal
 scoop install nerd-fonts/Hack-NF
+scoop install extras/ghidra
+scoop install main/ninja
+scoop install main/nodejs
 
 # others
 # scoop install extras/foxmail
