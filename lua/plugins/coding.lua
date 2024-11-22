@@ -11,6 +11,11 @@ return {
   },
 
   {
+    "Saghen/blink.cmp",
+    version = "v0.5.1",
+  },
+
+  {
     "hrsh7th/nvim-cmp",
     dependencies = {
       "hrsh7th/cmp-emoji",
