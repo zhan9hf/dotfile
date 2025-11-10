@@ -3,14 +3,20 @@ return {
   -- { "ellisonleao/gruvbox.nvim" },
   { "junegunn/seoul256.vim" },
   { "joshdick/onedark.vim" },
-  { "rose-pine/neovim", name = "rose-pine" },
+  {
+    "rose-pine/neovim",
+    name = "rose-pine",
+    config = function()
+      vim.cmd("colorscheme rose-pine")
+    end,
+  },
   { "tanvirtin/monokai.nvim" },
   { "loctvl842/monokai-pro.nvim" },
   -- 加载 colorscheme
   {
     "LazyVim/LazyVim",
     opts = {
-      colorscheme = "catppuccin-frappe",
+      -- colorscheme = "catppuccin-frappe",
       -- colorscheme = "onedark",
       -- colorscheme = "tokyonight",
       -- colorscheme = "monokai-pro",

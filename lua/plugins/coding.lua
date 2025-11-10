@@ -1,26 +1,14 @@
 return {
   -- Create annotations with one keybind, and jump your cursor in the inserted annotation
-  {
-    "stevearc/conform.nvim",
-    opts = {
-      formatters_by_ft = {
-        lua = { "stylua" },
-        cmake = { "cmake_format" },
-      },
-    },
-  },
-
-  {
-    "jamespeilunli/nvim-flatbuffers",
-    event = "LspAttach",
-    config = function()
-      require("flatbuffers").setup()
-    end,
-  },
-
-  {
-    "zchee/vim-flatbuffers",
-  },
+  -- {
+  --   "stevearc/conform.nvim",
+  --   opts = {
+  --     formatters_by_ft = {
+  --       lua = { "stylua" },
+  --       cmake = { "cmake_format" },
+  --     },
+  --   },
+  -- },
 
   -- {
   --   "hrsh7th/nvim-cmp",
@@ -50,35 +38,5 @@ return {
   --       end, { "i", "s" }),
   --     })
   --   end,
-  -- },
-
-  -- {
-  --   "saghen/blink.cmp",
-  --   opts = {
-  --     keymap = {
-  --       preset = "enter",
-  --       ["<C-y>"] = { "select_and_accept" },
-  --       ["<Tab>"] = {
-  --         function(cmp)
-  --           if cmp.snippet_active() then
-  --             return cmp.snippet_forward()
-  --           else
-  --             return cmp.select_next()
-  --           end
-  --         end,
-  --         "fallback",
-  --       },
-  --       ["<S-Tab>"] = {
-  --         function(cmp)
-  --           if cmp.snippet_active() then
-  --             return cmp.snippet_backward()
-  --           else
-  --             return cmp.select_prev()
-  --           end
-  --         end,
-  --         "fallback",
-  --       },
-  --     },
-  --   },
   -- },
 }

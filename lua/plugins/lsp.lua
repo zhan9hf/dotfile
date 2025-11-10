@@ -7,7 +7,7 @@ return {
       ---@diagnostic disable-next-line: undefined-doc-name
       ---@type lspconfig.options
       servers = {
-        cmake = {},
+        -- cmake = {},
         cssls = {},
         tailwindcss = {
           root_dir = function(...)
